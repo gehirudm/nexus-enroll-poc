@@ -1,0 +1,46 @@
+package com.nexus.enrollment.admin;
+
+import com.nexus.enrollment.admin.service.AdminService;
+import com.nexus.enrollment.admin.service.AdminServiceImpl;
+import com.nexus.enrollment.admin.service.ReportService;
+import com.nexus.enrollment.admin.service.ReportServiceImpl;
+import com.nexus.enrollment.admin.controller.AdminController;
+
+public class AdminServiceApplication {
+    
+    public static void main(String[] args) {
+        // Initialize services
+        AdminService adminService = new AdminServiceImpl();
+        ReportService reportService = new ReportServiceImpl();
+        
+        // Initialize controller
+        AdminController controller = new AdminController(adminService, reportService);
+        
+        System.out.println("Admin Service Application started successfully!");
+        
+        // Demo usage
+        demonstrateService(controller);
+    }
+    
+    private static void demonstrateService(AdminController controller) {
+        System.out.println("\n=== Admin Service Demo ===");
+        
+        // Generate enrollment report
+        var enrollmentReport = controller.generateEnrollmentReport("Computer Science", "Fall 2024");
+        System.out.println("Enrollment report: " + enrollmentReport.isSuccess());
+        
+        // Generate faculty workload report
+        var workloadReport = controller.generateFacultyWorkloadReport();
+        System.out.println("Faculty workload report: " + workloadReport.isSuccess());
+        
+        // Generate course trends report
+        var trendsReport = controller.generateCourseTrendsReport();
+        System.out.println("Course trends report: " + trendsReport.isSuccess());
+        
+        // Get all students
+        var studentsResponse = controller.getAllStudents();
+        System.out.println("Get all students: " + studentsResponse.isSuccess());
+        
+        System.out.println("Demo completed!");
+    }
+}
