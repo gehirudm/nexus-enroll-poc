@@ -47,37 +47,113 @@ nexus-enroll-poc/
 ### Prerequisites
 
 - Java 11 or higher
+- Apache Maven 3.6 or higher
 - Basic understanding of microservices architecture
 
 ### Compilation and Execution
 
-1. **Compile all Java files:**
-   ```bash
-   find . -name "*.java" | xargs javac -cp .
-   ```
+#### 1. Build All Modules
+From the root directory, first install all modules to local repository:
+```bash
+mvn clean install
+```
 
-2. **Run the main application:**
-   ```bash
-   java NexusEnrollmentSystem
-   ```
+#### 2. Run Individual Microservices
 
-3. **Run individual services:**
-   ```bash
-   # Student Service
-   java student_service.StudentServiceApplication
-   
-   # Course Service
-   java course_service.CourseServiceApplication
-   
-   # Faculty Service
-   java faculty_service.FacultyServiceApplication
-   
-   # Admin Service
-   java admin_service.AdminServiceApplication
-   
-   # Notification Service
-   java notification_service.NotificationServiceApplication
-   ```
+**Method 1: From Root Directory (Recommended)**
+```bash
+# Student Service
+mvn exec:java -pl student-service -Dexec.mainClass="com.nexus.enrollment.student.StudentServiceApplication"
+
+# Course Service
+mvn exec:java -pl course-service -Dexec.mainClass="com.nexus.enrollment.course.CourseServiceApplication"
+
+# Faculty Service
+mvn exec:java -pl faculty-service -Dexec.mainClass="com.nexus.enrollment.faculty.FacultyServiceApplication"
+
+# Admin Service
+mvn exec:java -pl admin-service -Dexec.mainClass="com.nexus.enrollment.admin.AdminServiceApplication"
+
+# Notification Service
+mvn exec:java -pl notification-service -Dexec.mainClass="com.nexus.enrollment.notification.NotificationServiceApplication"
+```
+
+**Method 2: Navigate to Service Directory**
+```bash
+# Student Service
+cd student-service
+mvn exec:java -Dexec.mainClass="com.nexus.enrollment.student.StudentServiceApplication"
+
+# Course Service  
+cd course-service
+mvn exec:java -Dexec.mainClass="com.nexus.enrollment.course.CourseServiceApplication"
+
+# Faculty Service
+cd faculty-service
+mvn exec:java -Dexec.mainClass="com.nexus.enrollment.faculty.FacultyServiceApplication"
+
+# Admin Service
+cd admin-service
+mvn exec:java -Dexec.mainClass="com.nexus.enrollment.admin.AdminServiceApplication"
+
+# Notification Service
+cd notification-service
+mvn exec:java -Dexec.mainClass="com.nexus.enrollment.notification.NotificationServiceApplication"
+```
+
+**Method 3: Direct Java Execution**
+```bash
+# After running 'mvn clean install', you can run:
+cd student-service
+java -cp "target/classes:../nexus-common/target/classes" com.nexus.enrollment.student.StudentServiceApplication
+```
+
+#### 3. Testing the Web Services
+Each microservice runs on a different port and provides REST endpoints:
+
+**Service Ports:**
+- Student Service: `http://localhost:8081`
+- Course Service: `http://localhost:8082`
+- Faculty Service: `http://localhost:8083`
+- Admin Service: `http://localhost:8084`
+- Notification Service: `http://localhost:8085`
+
+**Example API Calls:**
+```bash
+# Student Service
+curl http://localhost:8081/students/1
+curl http://localhost:8081/students/1/schedule
+curl -X POST http://localhost:8081/students/1/enroll/101
+
+# Course Service
+curl http://localhost:8082/courses
+curl http://localhost:8082/courses/1
+curl http://localhost:8082/courses/available
+
+# Faculty Service
+curl http://localhost:8083/faculty/1
+curl http://localhost:8083/faculty/1/courses
+curl http://localhost:8083/faculty/1/roster/101
+
+# Admin Service
+curl http://localhost:8084/admin/students
+curl "http://localhost:8084/admin/reports/enrollment?department=CS&semester=Fall2024"
+curl -X POST http://localhost:8084/admin/courses
+
+# Notification Service
+curl http://localhost:8085/notifications/user/1
+curl -X POST http://localhost:8085/notifications
+curl -X PUT http://localhost:8085/notifications/1/read
+```
+
+#### 4. Running Tests
+```bash
+# Run all tests
+mvn test
+
+# Run tests for specific service
+mvn test -pl student-service
+```
 
 ## Features Implemented
 

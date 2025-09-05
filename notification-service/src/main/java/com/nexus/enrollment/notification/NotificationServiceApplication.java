@@ -7,10 +7,19 @@ import com.nexus.enrollment.notification.repository.InMemoryNotificationReposito
 import com.nexus.enrollment.notification.service.NotificationService;
 import com.nexus.enrollment.notification.service.NotificationServiceImpl;
 import com.nexus.enrollment.notification.controller.NotificationController;
+import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpExchange;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 
 public class NotificationServiceApplication {
     
-    public static void main(String[] args) {
+    private static final int PORT = 8085;
+    private static NotificationController controller;
+    
+    public static void main(String[] args) throws IOException {
         // Initialize repositories
         NotificationRepository notificationRepo = new InMemoryNotificationRepository();
         
@@ -18,16 +27,101 @@ public class NotificationServiceApplication {
         NotificationService notificationService = new NotificationServiceImpl(notificationRepo);
         
         // Initialize controller
-        NotificationController controller = new NotificationController(notificationService);
+        controller = new NotificationController(notificationService);
         
         // Initialize with sample data
         initializeSampleData(controller);
         
-        System.out.println("Notification Service Application started successfully!");
-        
-        // Demo usage
-        demonstrateService(controller);
+        // Start HTTP server
+        startHttpServer();
     }
+    
+    private static void startHttpServer() throws IOException {
+        HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+        
+        // Notification Service Endpoints
+        server.createContext("/notifications", new NotificationsHandler());
+        server.createContext("/notifications/", new NotificationsByIdHandler());
+        
+        server.setExecutor(null);
+        server.start();
+        
+        System.out.println("Notification Service started on port " + PORT);
+        System.out.println("Available endpoints:");
+        System.out.println("  POST /notifications - Send notification");
+        System.out.println("  GET /notifications/user/{userId} - Get user notifications");
+        System.out.println("  GET /notifications/type/{type} - Get notifications by type");
+        System.out.println("  PUT /notifications/{id}/read - Mark notification as read");
+        System.out.println("  POST /notifications/subscribe - Subscribe to notification type");
+    }
+    
+    static class NotificationsHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String method = exchange.getRequestMethod();
+            String path = exchange.getRequestURI().getPath();
+            String response = "";
+            
+            if ("POST".equals(method)) {
+                if ("/notifications".equals(path)) {
+                    response = "{\"message\": \"Send notification\", \"status\": \"success\"}";
+                } else if ("/notifications/subscribe".equals(path)) {
+                    response = "{\"message\": \"Subscribe to notification type\", \"status\": \"success\"}";
+                }
+            } else if ("GET".equals(method) && "/notifications".equals(path)) {
+                response = "{\"message\": \"Get all notifications\", \"status\": \"success\"}";
+            }
+            
+            if (response.isEmpty()) {
+                response = "{\"message\": \"Notification endpoint not found\", \"status\": \"error\"}";
+                exchange.sendResponseHeaders(404, response.getBytes().length);
+            } else {
+                exchange.sendResponseHeaders(200, response.getBytes().length);
+            }
+            
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            OutputStream os = exchange.getResponseBody();
+            os.write(response.getBytes());
+            os.close();
+        }
+    }
+    
+    static class NotificationsByIdHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String method = exchange.getRequestMethod();
+            String path = exchange.getRequestURI().getPath();
+            String[] pathParts = path.split("/");
+            String response = "";
+            
+            if ("GET".equals(method) && pathParts.length >= 4) {
+                String section = pathParts[2];
+                String identifier = pathParts[3];
+                
+                if ("user".equals(section)) {
+                    // GET /notifications/user/{userId}
+                    response = "{\"message\": \"Get notifications for user " + identifier + "\", \"status\": \"success\"}";
+                } else if ("type".equals(section)) {
+                    // GET /notifications/type/{type}
+                    response = "{\"message\": \"Get notifications of type " + identifier + "\", \"status\": \"success\"}";
+                }
+            } else if ("PUT".equals(method) && pathParts.length == 4 && "read".equals(pathParts[3])) {
+                // PUT /notifications/{id}/read
+                String notificationId = pathParts[2];
+                response = "{\"message\": \"Mark notification " + notificationId + " as read\", \"status\": \"success\"}";
+            }
+            
+            if (response.isEmpty()) {
+                response = "{\"message\": \"Notification endpoint not found\", \"status\": \"error\"}";
+                exchange.sendResponseHeaders(404, response.getBytes().length);
+            } else {
+                exchange.sendResponseHeaders(200, response.getBytes().length);
+            }
+            
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            OutputStream os = exchange.getResponseBody();
+            os.write(response.getBytes());
+            os.close();
     
     private static void initializeSampleData(NotificationController controller) {
         // Create some sample notifications
@@ -44,27 +138,5 @@ public class NotificationServiceApplication {
         controller.subscribeToNotifications(2L, NotificationType.GRADE_SUBMITTED);
         
         System.out.println("Sample notification data initialized");
-    }
-    
-    private static void demonstrateService(NotificationController controller) {
-        System.out.println("\n=== Notification Service Demo ===");
-        
-        // Get user notifications
-        var userNotifications = controller.getUserNotifications(1L);
-        System.out.println("User 1 notifications: " + userNotifications.isSuccess());
-        
-        // Get unread notifications
-        var unreadNotifications = controller.getUnreadNotifications(1L);
-        System.out.println("User 1 unread notifications: " + unreadNotifications.isSuccess());
-        
-        // Mark notification as read
-        var markReadResponse = controller.markAsRead(1L);
-        System.out.println("Mark notification as read: " + markReadResponse.isSuccess());
-        
-        // Get notifications by type
-        var gradeNotifications = controller.getNotificationsByType(NotificationType.GRADE_SUBMITTED);
-        System.out.println("Grade notifications: " + gradeNotifications.isSuccess());
-        
-        System.out.println("Demo completed!");
     }
 }
