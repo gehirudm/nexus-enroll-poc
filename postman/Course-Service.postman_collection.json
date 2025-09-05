@@ -1,0 +1,382 @@
+{
+	"info": {
+		"_postman_id": "course-service-tests",
+		"name": "Course Service API Tests",
+		"description": "Comprehensive test collection for the Course Service microservice",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get All Courses",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains all courses\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('all courses');",
+							"});",
+							"",
+							"pm.test(\"Response time is acceptable\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(300);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/courses",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"courses"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get Course by ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains course information\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('course');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/courses/{{courseId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"courses",
+						"{{courseId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get Courses by Department",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains department courses\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('department');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/courses/department/{{department}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"courses",
+						"department",
+						"{{department}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get Courses by Instructor",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains instructor courses\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('instructor');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/courses/instructor/{{facultyId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"courses",
+						"instructor",
+						"{{facultyId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Search Courses",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains search results\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('query');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/courses/search?keyword={{searchKeyword}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"courses",
+						"search"
+					],
+					"query": [
+						{
+							"key": "keyword",
+							"value": "{{searchKeyword}}"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "Get Available Courses",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains available courses\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('available');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/courses/available",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"courses",
+						"available"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get Course Prerequisites",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains prerequisites\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('prerequisites');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/courses/{{courseId}}/prerequisites",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"courses",
+						"{{courseId}}",
+						"prerequisites"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get Course Enrollment Count",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains enrollment count\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('enrollment');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/courses/{{courseId}}/enrollments",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"courses",
+						"{{courseId}}",
+						"enrollments"
+					]
+				}
+			}
+		},
+		{
+			"name": "Create New Course",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response confirms course creation\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('Create');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"courseCode\": \"CS201\",\n    \"name\": \"Data Structures\",\n    \"description\": \"Introduction to data structures and algorithms\",\n    \"department\": \"Computer Science\",\n    \"capacity\": 30,\n    \"instructorId\": 1\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/courses",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"courses"
+					]
+				}
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8082",
+			"type": "string"
+		},
+		{
+			"key": "courseId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "department",
+			"value": "Computer Science",
+			"type": "string"
+		},
+		{
+			"key": "facultyId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "searchKeyword",
+			"value": "computer",
+			"type": "string"
+		}
+	]
+}

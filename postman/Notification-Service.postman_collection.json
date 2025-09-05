@@ -1,0 +1,337 @@
+{
+	"info": {
+		"_postman_id": "notification-service-tests",
+		"name": "Notification Service API Tests",
+		"description": "Comprehensive test collection for the Notification Service microservice",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Send Notification",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response confirms notification sent\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('Send notification');",
+							"});",
+							"",
+							"pm.test(\"Response time is acceptable\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\": {{userId}},\n    \"type\": \"{{notificationType}}\",\n    \"title\": \"Test Notification\",\n    \"message\": \"This is a test notification from Postman\",\n    \"priority\": \"HIGH\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/notifications",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get User Notifications",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains user notifications\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('notifications for user');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/notifications/user/{{userId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications",
+						"user",
+						"{{userId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get Notifications by Type",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains notifications by type\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('notifications of type');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/notifications/type/{{notificationType}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications",
+						"type",
+						"{{notificationType}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Mark Notification as Read",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response confirms notification marked as read\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('as read');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"readTimestamp\": \"{{$timestamp}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/notifications/{{notificationId}}/read",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications",
+						"{{notificationId}}",
+						"read"
+					]
+				}
+			}
+		},
+		{
+			"name": "Subscribe to Notification Type",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response confirms subscription\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('Subscribe');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\": {{userId}},\n    \"notificationType\": \"{{notificationType}}\",\n    \"preferences\": {\n        \"email\": true,\n        \"push\": true,\n        \"sms\": false\n    }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/notifications/subscribe",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications",
+						"subscribe"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get All Notifications",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains all notifications\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('all notifications');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/notifications",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications"
+					]
+				}
+			}
+		},
+		{
+			"name": "Test Invalid Notification ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404 for invalid notification ID\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Response contains error message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'error');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/notifications/invalid/read",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications",
+						"invalid",
+						"read"
+					]
+				}
+			}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set dynamic timestamp for requests",
+					"pm.globals.set(\"timestamp\", new Date().toISOString());"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8085",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "notificationId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "notificationType",
+			"value": "ENROLLMENT_CONFIRMATION",
+			"type": "string"
+		}
+	]
+}

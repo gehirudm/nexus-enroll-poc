@@ -1,0 +1,291 @@
+{
+	"info": {
+		"_postman_id": "student-service-tests",
+		"name": "Student Service API Tests",
+		"description": "Comprehensive test collection for the Student Service microservice",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Student by ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains success message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData).to.have.property('message');",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is application/json\", function () {",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/students/{{studentId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"students",
+						"{{studentId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get Student Schedule",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains schedule information\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('schedule');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/students/{{studentId}}/schedule",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"students",
+						"{{studentId}}",
+						"schedule"
+					]
+				}
+			}
+		},
+		{
+			"name": "Get Student Enrollments",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains enrollment information\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('enrollments');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/students/{{studentId}}/enrollments",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"students",
+						"{{studentId}}",
+						"enrollments"
+					]
+				}
+			}
+		},
+		{
+			"name": "Enroll Student in Course",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response confirms enrollment\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('Enroll');",
+							"    pm.expect(jsonData.message).to.include('course');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"enrollmentDate\": \"2024-09-06\",\n    \"semester\": \"Fall 2024\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/students/{{studentId}}/enroll/{{courseId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"students",
+						"{{studentId}}",
+						"enroll",
+						"{{courseId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Drop Course for Student",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response confirms course drop\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('Drop');",
+							"    pm.expect(jsonData.message).to.include('course');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/students/{{studentId}}/drop/{{courseId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"students",
+						"{{studentId}}",
+						"drop",
+						"{{courseId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "Test Invalid Student ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404 for invalid student ID\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Response contains error message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'error');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/students/invalid",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"students",
+						"invalid"
+					]
+				}
+			}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set up common variables",
+					"pm.globals.set(\"timestamp\", Date.now());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Common post-test validations",
+					"pm.test(\"Response has proper JSON structure\", function () {",
+					"    pm.response.to.be.json;",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "studentId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "courseId",
+			"value": "101",
+			"type": "string"
+		}
+	]
+}
