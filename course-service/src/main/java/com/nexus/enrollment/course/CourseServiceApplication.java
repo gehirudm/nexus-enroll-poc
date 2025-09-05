@@ -7,6 +7,7 @@ import com.nexus.enrollment.course.repository.InMemoryCourseRepository;
 import com.nexus.enrollment.course.service.CourseService;
 import com.nexus.enrollment.course.service.CourseServiceImpl;
 import com.nexus.enrollment.course.controller.CourseController;
+import com.nexus.enrollment.common.util.ResponseBuilder;
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
@@ -60,6 +61,19 @@ public class CourseServiceApplication {
         System.out.println("  GET /courses/{id}/enrollments - Get enrolled students count");
     }
     
+    // Helper method to convert ResponseBuilder.Response to JSON
+    private static String convertResponseToJson(ResponseBuilder.Response response) {
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"message\":\"").append(response.getMessage() != null ? response.getMessage().replace("\"", "\\\"") : "").append("\",");
+        json.append("\"status\":\"").append(response.isSuccess() ? "success" : "error").append("\"");
+        if (response.getData() != null) {
+            json.append(",\"data\":").append(response.getData().toString());
+        }
+        json.append("}");
+        return json.toString();
+    }
+    
     static class CoursesHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -67,27 +81,51 @@ public class CourseServiceApplication {
             String path = exchange.getRequestURI().getPath();
             String query = exchange.getRequestURI().getQuery();
             String response = "";
+            int statusCode = 200;
             
-            if ("GET".equals(method)) {
-                if ("/courses".equals(path)) {
-                    response = "{\"message\": \"Get all courses\", \"status\": \"success\"}";
-                } else if ("/courses/available".equals(path)) {
-                    response = "{\"message\": \"Get available courses\", \"status\": \"success\"}";
-                } else if (path.startsWith("/courses/search") && query != null) {
-                    response = "{\"message\": \"Search courses with query: " + query + "\", \"status\": \"success\"}";
+            try {
+                if ("GET".equals(method)) {
+                    if ("/courses".equals(path)) {
+                        ResponseBuilder.Response controllerResponse = controller.getAllCourses();
+                        response = convertResponseToJson(controllerResponse);
+                        statusCode = controllerResponse.isSuccess() ? 200 : 400;
+                    } else if ("/courses/available".equals(path)) {
+                        ResponseBuilder.Response controllerResponse = controller.getAvailableCourses();
+                        response = convertResponseToJson(controllerResponse);
+                        statusCode = controllerResponse.isSuccess() ? 200 : 400;
+                    } else if (path.startsWith("/courses/search") && query != null) {
+                        // Parse query parameters
+                        String keyword = null, department = null;
+                        if (query != null) {
+                            String[] params = query.split("&");
+                            for (String param : params) {
+                                String[] keyValue = param.split("=");
+                                if (keyValue.length == 2) {
+                                    if ("keyword".equals(keyValue[0])) {
+                                        keyword = keyValue[1];
+                                    } else if ("department".equals(keyValue[0])) {
+                                        department = keyValue[1];
+                                    }
+                                }
+                            }
+                        }
+                        ResponseBuilder.Response controllerResponse = controller.searchCourses(department, keyword);
+                        response = convertResponseToJson(controllerResponse);
+                        statusCode = controllerResponse.isSuccess() ? 200 : 400;
+                    }
                 }
-            } else if ("POST".equals(method) && "/courses".equals(path)) {
-                response = "{\"message\": \"Create new course\", \"status\": \"success\"}";
-            }
-            
-            if (response.isEmpty()) {
-                response = "{\"message\": \"Endpoint not found\", \"status\": \"error\"}";
-                exchange.sendResponseHeaders(404, response.getBytes().length);
-            } else {
-                exchange.sendResponseHeaders(200, response.getBytes().length);
+                
+                if (response.isEmpty()) {
+                    response = "{\"message\": \"Endpoint not found\", \"status\": \"error\"}";
+                    statusCode = 404;
+                }
+            } catch (Exception e) {
+                response = "{\"message\": \"" + e.getMessage() + "\", \"status\": \"error\"}";
+                statusCode = 500;
             }
             
             exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(statusCode, response.getBytes().length);
             OutputStream os = exchange.getResponseBody();
             os.write(response.getBytes());
             os.close();
@@ -101,39 +139,59 @@ public class CourseServiceApplication {
             String path = exchange.getRequestURI().getPath();
             String[] pathParts = path.split("/");
             String response = "";
+            int statusCode = 200;
             
-            if ("GET".equals(method) && pathParts.length >= 3) {
-                if (pathParts.length == 3) {
-                    // GET /courses/{id}
-                    String courseId = pathParts[2];
-                    response = "{\"message\": \"Get course " + courseId + "\", \"status\": \"success\"}";
-                } else if (pathParts.length == 4) {
-                    String courseId = pathParts[2];
-                    String action = pathParts[3];
-                    if ("prerequisites".equals(action)) {
-                        response = "{\"message\": \"Get prerequisites for course " + courseId + "\", \"status\": \"success\"}";
-                    } else if ("enrollments".equals(action)) {
-                        response = "{\"message\": \"Get enrollment count for course " + courseId + "\", \"status\": \"success\"}";
+            try {
+                if ("GET".equals(method) && pathParts.length >= 3) {
+                    if (pathParts.length == 3) {
+                        // GET /courses/{id}
+                        Long courseId = Long.parseLong(pathParts[2]);
+                        ResponseBuilder.Response controllerResponse = controller.getCourse(courseId);
+                        response = convertResponseToJson(controllerResponse);
+                        statusCode = controllerResponse.isSuccess() ? 200 : 404;
+                    } else if (pathParts.length == 4) {
+                        if (Character.isDigit(pathParts[2].charAt(0))) {
+                            // Course ID based endpoints
+                            Long courseId = Long.parseLong(pathParts[2]);
+                            String action = pathParts[3];
+                            if ("prerequisites".equals(action)) {
+                                // For now, return a simple response as prerequisites method doesn't exist
+                                response = "{\"message\": \"Prerequisites for course " + courseId + "\", \"status\": \"success\"}";
+                            } else if ("enrollments".equals(action)) {
+                                ResponseBuilder.Response controllerResponse = controller.getEnrollmentCount(courseId);
+                                response = convertResponseToJson(controllerResponse);
+                                statusCode = controllerResponse.isSuccess() ? 200 : 404;
+                            }
+                        } else if ("department".equals(pathParts[2])) {
+                            // GET /courses/department/{dept}
+                            String department = pathParts[3];
+                            ResponseBuilder.Response controllerResponse = controller.getCoursesByDepartment(department);
+                            response = convertResponseToJson(controllerResponse);
+                            statusCode = controllerResponse.isSuccess() ? 200 : 404;
+                        } else if ("instructor".equals(pathParts[2])) {
+                            // GET /courses/instructor/{facultyId}
+                            Long facultyId = Long.parseLong(pathParts[3]);
+                            ResponseBuilder.Response controllerResponse = controller.getCoursesByInstructor(facultyId);
+                            response = convertResponseToJson(controllerResponse);
+                            statusCode = controllerResponse.isSuccess() ? 200 : 404;
+                        }
                     }
-                } else if (pathParts.length == 4 && "department".equals(pathParts[2])) {
-                    // GET /courses/department/{dept}
-                    String department = pathParts[3];
-                    response = "{\"message\": \"Get courses for department " + department + "\", \"status\": \"success\"}";
-                } else if (pathParts.length == 4 && "instructor".equals(pathParts[2])) {
-                    // GET /courses/instructor/{facultyId}
-                    String facultyId = pathParts[3];
-                    response = "{\"message\": \"Get courses for instructor " + facultyId + "\", \"status\": \"success\"}";
                 }
-            }
-            
-            if (response.isEmpty()) {
-                response = "{\"message\": \"Endpoint not found\", \"status\": \"error\"}";
-                exchange.sendResponseHeaders(404, response.getBytes().length);
-            } else {
-                exchange.sendResponseHeaders(200, response.getBytes().length);
+                
+                if (response.isEmpty()) {
+                    response = "{\"message\": \"Endpoint not found\", \"status\": \"error\"}";
+                    statusCode = 404;
+                }
+            } catch (NumberFormatException e) {
+                response = "{\"message\": \"Invalid ID format\", \"status\": \"error\"}";
+                statusCode = 400;
+            } catch (Exception e) {
+                response = "{\"message\": \"" + e.getMessage() + "\", \"status\": \"error\"}";
+                statusCode = 500;
             }
             
             exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(statusCode, response.getBytes().length);
             OutputStream os = exchange.getResponseBody();
             os.write(response.getBytes());
             os.close();
@@ -160,8 +218,7 @@ public class CourseServiceApplication {
         
         System.out.println("Sample data initialized - 3 courses created");
     }
-}
-    
+
     private static void demonstrateService(CourseController controller) {
         System.out.println("\n=== Course Service Demo ===");
         
