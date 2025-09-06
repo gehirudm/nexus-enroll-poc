@@ -1,9 +1,10 @@
 package com.nexus.enrollment.common.model;
 
+import com.nexus.enrollment.common.util.JsonSerializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Student {
+public class Student implements JsonSerializable {
     private Long id;
     private String name;
     private String email;
@@ -46,5 +47,42 @@ public class Student {
     public boolean hasCompletedCourse(Long courseId) {
         return grades.stream().anyMatch(grade -> 
             grade.getCourseId().equals(courseId) && grade.isPassing());
+    }
+    
+    // JSON serialization method
+    @Override
+    public String toJson() {
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"id\":").append(id).append(",");
+        json.append("\"name\":\"").append(name != null ? name.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"email\":\"").append(email != null ? email.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"department\":\"").append(department != null ? department.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"enrollments\":[");
+        if (enrollments != null) {
+            for (int i = 0; i < enrollments.size(); i++) {
+                if (i > 0) json.append(",");
+                if (enrollments.get(i) instanceof JsonSerializable) {
+                    json.append(((JsonSerializable) enrollments.get(i)).toJson());
+                } else {
+                    json.append("\"").append(enrollments.get(i).toString()).append("\"");
+                }
+            }
+        }
+        json.append("],");
+        json.append("\"grades\":[");
+        if (grades != null) {
+            for (int i = 0; i < grades.size(); i++) {
+                if (i > 0) json.append(",");
+                if (grades.get(i) instanceof JsonSerializable) {
+                    json.append(((JsonSerializable) grades.get(i)).toJson());
+                } else {
+                    json.append("\"").append(grades.get(i).toString()).append("\"");
+                }
+            }
+        }
+        json.append("]");
+        json.append("}");
+        return json.toString();
     }
 }

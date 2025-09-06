@@ -1,8 +1,9 @@
 package com.nexus.enrollment.common.model;
 
 import com.nexus.enrollment.common.enums.GradeStatus;
+import com.nexus.enrollment.common.util.JsonSerializable;
 
-public class Grade {
+public class Grade implements JsonSerializable {
     private Long id;
     private Long studentId;
     private Long courseId;
@@ -42,5 +43,20 @@ public class Grade {
     // Business method
     public boolean isPassing() { 
         return !gradeValue.equals("F") && !gradeValue.equals("W");
+    }
+    
+    // JSON serialization method
+    @Override
+    public String toJson() {
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"id\":").append(id != null ? id : "null").append(",");
+        json.append("\"studentId\":").append(studentId != null ? studentId : "null").append(",");
+        json.append("\"courseId\":").append(courseId != null ? courseId : "null").append(",");
+        json.append("\"gradeValue\":\"").append(gradeValue != null ? gradeValue.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"status\":\"").append(status != null ? status.toString() : "").append("\",");
+        json.append("\"facultyId\":").append(facultyId != null ? facultyId : "null");
+        json.append("}");
+        return json.toString();
     }
 }

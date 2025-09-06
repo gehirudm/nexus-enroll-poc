@@ -1,9 +1,10 @@
 package com.nexus.enrollment.common.model;
 
+import com.nexus.enrollment.common.util.JsonSerializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Faculty {
+public class Faculty implements JsonSerializable {
     private Long id;
     private String name;
     private String email;
@@ -36,4 +37,25 @@ public class Faculty {
     
     public List<Long> getAssignedCourseIds() { return assignedCourseIds; }
     public void setAssignedCourseIds(List<Long> assignedCourseIds) { this.assignedCourseIds = assignedCourseIds; }
+    
+    // JSON serialization method
+    @Override
+    public String toJson() {
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"id\":").append(id).append(",");
+        json.append("\"name\":\"").append(name != null ? name.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"email\":\"").append(email != null ? email.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"department\":\"").append(department != null ? department.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"assignedCourseIds\":[");
+        if (assignedCourseIds != null) {
+            for (int i = 0; i < assignedCourseIds.size(); i++) {
+                if (i > 0) json.append(",");
+                json.append(assignedCourseIds.get(i));
+            }
+        }
+        json.append("]");
+        json.append("}");
+        return json.toString();
+    }
 }
