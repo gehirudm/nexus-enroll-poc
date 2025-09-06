@@ -3,18 +3,18 @@ package com.nexus.enrollment.common.exceptions;
 import io.javalin.http.Context;
 import com.nexus.enrollment.common.util.ResponseBuilder;
 
-public class ValidationException extends HttpException {
-    public ValidationException(String message) { 
-        super(message); 
+public class BadRequestException extends HttpException {
+    public BadRequestException(String message) {
+        super(message);
     }
     
-    public ValidationException(String message, Throwable cause) {
+    public BadRequestException(String message, Throwable cause) {
         super(message, cause);
     }
     
     @Override
     public void handleResponse(Context ctx) {
-        ctx.status(getStatusCode()).json(ResponseBuilder.error("Validation error: " + getMessage()));
+        ctx.status(getStatusCode()).json(ResponseBuilder.error(getMessage()));
     }
     
     @Override

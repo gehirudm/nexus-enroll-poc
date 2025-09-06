@@ -3,52 +3,57 @@ package com.nexus.enrollment.course;
 import com.nexus.enrollment.common.model.Course;
 import com.nexus.enrollment.common.model.Schedule;
 import com.nexus.enrollment.common.model.Prerequisite;
+import com.nexus.enrollment.common.web.WebServer;
 import com.nexus.enrollment.course.repository.CourseRepository;
 import com.nexus.enrollment.course.repository.InMemoryCourseRepository;
 import com.nexus.enrollment.course.service.CourseService;
-import com.nexus.enrollment.course.service.CourseServiceImpl;
-import com.nexus.enrollment.course.controller.CourseController;
 import com.nexus.enrollment.course.handler.CoursesHandler;
-import com.sun.net.httpserver.HttpServer;
-import java.io.IOException;
-import java.net.InetSocketAddress;
+import io.javalin.Javalin;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 public class CourseServiceApplication {
     
     private static final int PORT = 8082;
-    private static CourseController controller;
     private static CourseRepository courseRepository;
+    private static CoursesHandler coursesHandler;
     
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         // Initialize repositories
         courseRepository = new InMemoryCourseRepository();
         
         // Initialize services
-        CourseService courseService = new CourseServiceImpl(courseRepository);
+        CourseService courseService = new CourseService(courseRepository);
         
-        // Initialize controller
-        controller = new CourseController(courseService);
+        // Initialize handler
+        coursesHandler = new CoursesHandler(courseService, courseRepository);
         
         // Initialize with sample data
         initializeSampleData(courseRepository);
         
-        // Start HTTP server
-        startHttpServer();
+        // Start Javalin server
+        startJavalinServer();
     }
     
-    private static void startHttpServer() throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+    private static void startJavalinServer() {
+        Javalin app = WebServer.createAndConfigureServer();
         
-        // Course Service Endpoints - use the new handler
-        server.createContext("/courses", new CoursesHandler(controller, courseRepository));
-        
-        server.setExecutor(null);
-        server.start();
+        app.start(PORT);
         
         System.out.println("Course Service started on port " + PORT);
         System.out.println("Available endpoints:");
+        
+        // Course Service Endpoints using CoursesHandler methods
+        app.get("/courses", coursesHandler::getAllCourses);
+        app.get("/courses/{id}", coursesHandler::getCourseById);
+        app.get("/courses/department/{dept}", coursesHandler::getCoursesByDepartment);
+        app.get("/courses/instructor/{facultyId}", coursesHandler::getCoursesByInstructor);
+        app.get("/courses/search", coursesHandler::searchCourses);
+        app.get("/courses/available", coursesHandler::getAvailableCourses);
+        app.get("/courses/{id}/prerequisites", coursesHandler::getCoursePrerequisites);
+        app.get("/courses/{id}/enrollments", coursesHandler::getCourseEnrollments);
+        app.post("/courses", coursesHandler::createCourse);
+        
         System.out.println("  GET /courses - Get all courses");
         System.out.println("  GET /courses/{id} - Get course by ID");
         System.out.println("  GET /courses/department/{dept} - Get courses by department");
