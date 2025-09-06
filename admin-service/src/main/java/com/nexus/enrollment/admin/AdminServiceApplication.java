@@ -6,12 +6,15 @@ import com.nexus.enrollment.admin.service.ReportService;
 import com.nexus.enrollment.admin.service.ReportServiceImpl;
 import com.nexus.enrollment.admin.controller.AdminController;
 import com.nexus.enrollment.common.util.ResponseBuilder;
+import com.nexus.enrollment.common.model.Course;
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 
 public class AdminServiceApplication {
     
@@ -63,10 +66,81 @@ public class AdminServiceApplication {
         json.append("\"message\":\"").append(response.getMessage() != null ? response.getMessage().replace("\"", "\\\"") : "").append("\",");
         json.append("\"status\":\"").append(response.isSuccess() ? "success" : "error").append("\"");
         if (response.getData() != null) {
-            json.append(",\"data\":").append(response.getData().toString());
+            json.append(",\"data\":").append(convertObjectToJson(response.getData()));
         }
         json.append("}");
         return json.toString();
+    }
+    
+    // Helper method to convert objects to JSON
+    private static String convertObjectToJson(Object obj) {
+        if (obj == null) {
+            return "null";
+        }
+        
+        if (obj instanceof Course) {
+            Course course = (Course) obj;
+            StringBuilder json = new StringBuilder();
+            json.append("{");
+            json.append("\"id\":").append(course.getId()).append(",");
+            json.append("\"courseCode\":\"").append(course.getCourseCode() != null ? course.getCourseCode().replace("\"", "\\\"") : "").append("\",");
+            json.append("\"name\":\"").append(course.getName() != null ? course.getName().replace("\"", "\\\"") : "").append("\",");
+            json.append("\"description\":\"").append(course.getDescription() != null ? course.getDescription().replace("\"", "\\\"") : "").append("\",");
+            json.append("\"department\":\"").append(course.getDepartment() != null ? course.getDepartment().replace("\"", "\\\"") : "").append("\",");
+            json.append("\"instructorId\":").append(course.getInstructorId()).append(",");
+            json.append("\"totalCapacity\":").append(course.getTotalCapacity()).append(",");
+            json.append("\"availableSeats\":").append(course.getAvailableSeats());
+            json.append("}");
+            return json.toString();
+        } else if (obj instanceof java.util.List) {
+            java.util.List<?> list = (java.util.List<?>) obj;
+            StringBuilder json = new StringBuilder();
+            json.append("[");
+            for (int i = 0; i < list.size(); i++) {
+                if (i > 0) json.append(",");
+                json.append(convertObjectToJson(list.get(i)));
+            }
+            json.append("]");
+            return json.toString();
+        } else {
+            // For other objects, use toString() but wrap in quotes if it's a string-like value
+            String value = obj.toString();
+            if (obj instanceof String) {
+                return "\"" + value.replace("\"", "\\\"") + "\"";
+            } else if (obj instanceof Number || obj instanceof Boolean) {
+                return value;
+            } else {
+                return "\"" + value.replace("\"", "\\\"") + "\"";
+            }
+        }
+    }
+    
+    // Helper method to read request body
+    private static String readRequestBody(HttpExchange exchange) throws IOException {
+        InputStream inputStream = exchange.getRequestBody();
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        StringBuilder body = new StringBuilder();
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            body.append(new String(buffer, 0, bytesRead, StandardCharsets.UTF_8));
+        }
+        return body.toString();
+    }
+    
+    // Helper method to create Course object from request data
+    private static Course createCourseFromRequest(String requestBody) {
+        // For demonstration, create a sample course
+        // In a real application, you would parse JSON from requestBody
+        Course course = new Course();
+        course.setId(null); // Will be auto-generated
+        course.setCourseCode("CS101");
+        course.setName("Introduction to Computer Science");
+        course.setDescription("Basic computer science concepts");
+        course.setDepartment("Computer Science");
+        course.setTotalCapacity(30);
+        course.setAvailableSeats(30);
+        course.setInstructorId(1L);
+        return course;
     }
     
     static class AdminReportsHandler implements HttpHandler {
@@ -138,14 +212,20 @@ public class AdminServiceApplication {
             
             try {
                 if ("POST".equals(method) && "/admin/courses".equals(path)) {
-                    // For now, create a dummy course object - in real implementation, parse from request body
-                    ResponseBuilder.Response controllerResponse = controller.createCourse(null);
+                    // Read request body and create course object
+                    String requestBody = readRequestBody(exchange);
+                    Course course = createCourseFromRequest(requestBody);
+                    ResponseBuilder.Response controllerResponse = controller.createCourse(course);
                     response = convertResponseToJson(controllerResponse);
                     statusCode = controllerResponse.isSuccess() ? 201 : 400;
                 } else if (pathParts.length == 4) {
                     Long courseId = Long.parseLong(pathParts[3]);
                     if ("PUT".equals(method)) {
-                        ResponseBuilder.Response controllerResponse = controller.updateCourse(courseId, null);
+                        // For PUT requests, also read the request body
+                        String requestBody = readRequestBody(exchange);
+                        Course course = createCourseFromRequest(requestBody);
+                        course.setId(courseId); // Set the ID from the path
+                        ResponseBuilder.Response controllerResponse = controller.updateCourse(courseId, course);
                         response = convertResponseToJson(controllerResponse);
                         statusCode = controllerResponse.isSuccess() ? 200 : 400;
                     } else if ("DELETE".equals(method)) {

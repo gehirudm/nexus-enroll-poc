@@ -78,36 +78,6 @@ mvn exec:java -pl admin-service -Dexec.mainClass="com.nexus.enrollment.admin.Adm
 mvn exec:java -pl notification-service -Dexec.mainClass="com.nexus.enrollment.notification.NotificationServiceApplication"
 ```
 
-**Method 2: Navigate to Service Directory**
-```bash
-# Student Service
-cd student-service
-mvn exec:java -Dexec.mainClass="com.nexus.enrollment.student.StudentServiceApplication"
-
-# Course Service  
-cd course-service
-mvn exec:java -Dexec.mainClass="com.nexus.enrollment.course.CourseServiceApplication"
-
-# Faculty Service
-cd faculty-service
-mvn exec:java -Dexec.mainClass="com.nexus.enrollment.faculty.FacultyServiceApplication"
-
-# Admin Service
-cd admin-service
-mvn exec:java -Dexec.mainClass="com.nexus.enrollment.admin.AdminServiceApplication"
-
-# Notification Service
-cd notification-service
-mvn exec:java -Dexec.mainClass="com.nexus.enrollment.notification.NotificationServiceApplication"
-```
-
-**Method 3: Direct Java Execution**
-```bash
-# After running 'mvn clean install', you can run:
-cd student-service
-java -cp "target/classes:../nexus-common/target/classes" com.nexus.enrollment.student.StudentServiceApplication
-```
-
 #### 3. Testing the Web Services
 Each microservice runs on a different port and provides REST endpoints:
 

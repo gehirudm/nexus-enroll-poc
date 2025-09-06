@@ -1,9 +1,10 @@
 package com.nexus.enrollment.common.model;
 
+import com.nexus.enrollment.common.util.JsonSerializable;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
-public class Schedule {
+public class Schedule implements JsonSerializable {
     private Long id;
     private DayOfWeek dayOfWeek;
     private LocalTime startTime;
@@ -40,5 +41,18 @@ public class Schedule {
             return false;
         }
         return !(this.endTime.isBefore(other.startTime) || this.startTime.isAfter(other.endTime));
+    }
+    
+    // JSON serialization method
+    public String toJson() {
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"id\":").append(id != null ? id : "null").append(",");
+        json.append("\"dayOfWeek\":\"").append(dayOfWeek != null ? dayOfWeek.toString() : "").append("\",");
+        json.append("\"startTime\":\"").append(startTime != null ? startTime.toString() : "").append("\",");
+        json.append("\"endTime\":\"").append(endTime != null ? endTime.toString() : "").append("\",");
+        json.append("\"location\":\"").append(location != null ? location.replace("\"", "\\\"") : "").append("\"");
+        json.append("}");
+        return json.toString();
     }
 }

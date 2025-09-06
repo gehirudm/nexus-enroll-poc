@@ -1,9 +1,10 @@
 package com.nexus.enrollment.common.model;
 
+import com.nexus.enrollment.common.util.JsonSerializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Course {
+public class Course implements JsonSerializable {
     private Long id;
     private String courseCode;
     private String name;
@@ -78,5 +79,37 @@ public class Course {
         if (availableSeats < totalCapacity) {
             availableSeats++; 
         }
+    }
+    
+    // JSON serialization method
+    public String toJson() {
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"id\":").append(id != null ? id : "null").append(",");
+        json.append("\"courseCode\":\"").append(courseCode != null ? courseCode.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"name\":\"").append(name != null ? name.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"description\":\"").append(description != null ? description.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"department\":\"").append(department != null ? department.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"instructorId\":").append(instructorId != null ? instructorId : "null").append(",");
+        json.append("\"totalCapacity\":").append(totalCapacity).append(",");
+        json.append("\"availableSeats\":").append(availableSeats);
+        
+        // Add schedule if present
+        if (schedule != null) {
+            json.append(",\"schedule\":").append(schedule.toJson());
+        }
+        
+        // Add prerequisites if present
+        if (prerequisites != null && !prerequisites.isEmpty()) {
+            json.append(",\"prerequisites\":[");
+            for (int i = 0; i < prerequisites.size(); i++) {
+                if (i > 0) json.append(",");
+                json.append(prerequisites.get(i).toJson());
+            }
+            json.append("]");
+        }
+        
+        json.append("}");
+        return json.toString();
     }
 }

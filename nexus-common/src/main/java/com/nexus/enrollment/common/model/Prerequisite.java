@@ -1,6 +1,8 @@
 package com.nexus.enrollment.common.model;
 
-public class Prerequisite {
+import com.nexus.enrollment.common.util.JsonSerializable;
+
+public class Prerequisite implements JsonSerializable {
     private Long id;
     private Long courseId;
     private Long prerequisiteCourseId;
@@ -26,4 +28,16 @@ public class Prerequisite {
     
     public String getMinimumGrade() { return minimumGrade; }
     public void setMinimumGrade(String minimumGrade) { this.minimumGrade = minimumGrade; }
+    
+    // JSON serialization method
+    public String toJson() {
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"id\":").append(id != null ? id : "null").append(",");
+        json.append("\"courseId\":").append(courseId != null ? courseId : "null").append(",");
+        json.append("\"prerequisiteCourseId\":").append(prerequisiteCourseId != null ? prerequisiteCourseId : "null").append(",");
+        json.append("\"minimumGrade\":\"").append(minimumGrade != null ? minimumGrade.replace("\"", "\\\"") : "").append("\"");
+        json.append("}");
+        return json.toString();
+    }
 }
