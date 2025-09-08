@@ -7,8 +7,10 @@ import com.nexus.enrollment.common.model.Course;
 import com.nexus.enrollment.common.model.ValidationResult;
 import com.nexus.enrollment.common.enums.EnrollmentStatus;
 import com.nexus.enrollment.common.exceptions.NotFoundException;
-import com.nexus.enrollment.common.service.ServiceClient;
 import com.nexus.enrollment.common.service.ServiceResponse;
+import com.nexus.enrollment.common.registries.CourseServiceRegistry;
+import com.nexus.enrollment.common.registries.NotificationServiceRegistry;
+import com.nexus.enrollment.common.registries.AdminServiceRegistry;
 import com.nexus.enrollment.student.repository.StudentRepository;
 import com.nexus.enrollment.student.validator.EnrollmentValidator;
 
@@ -18,12 +20,10 @@ import java.util.ArrayList;
 public class EnrollmentService {
     private final StudentRepository studentRepository;
     private final List<EnrollmentValidator> validators;
-    private final ServiceClient serviceClient;
     
     public EnrollmentService(StudentRepository studentRepository, List<EnrollmentValidator> validators) {
         this.studentRepository = studentRepository;
         this.validators = validators != null ? validators : new ArrayList<>();
-        this.serviceClient = new ServiceClient();
     }
     
     public EnrollmentResult enrollStudent(Long studentId, Long courseId) {
@@ -31,7 +31,7 @@ public class EnrollmentService {
                 .orElseThrow(() -> new NotFoundException("Student", studentId));
         
         // Check if course exists using Course Service
-        ServiceResponse<Course> courseResponse = serviceClient.get("course", "/courses/" + courseId, Course.class);
+        ServiceResponse<Course> courseResponse = CourseServiceRegistry.getCourse(courseId);
         if (!courseResponse.isSuccess()) {
             return new EnrollmentResult(false, "Course not found: " + courseResponse.getMessage(), null);
         }
@@ -64,8 +64,7 @@ public class EnrollmentService {
             studentRepository.save(student);
             
             // Send waitlist notification
-            serviceClient.post("notification", "/notifications", 
-                new NotificationRequest(studentId, courseId, "WAITLIST_CONFIRMATION"), String.class);
+            NotificationServiceRegistry.sendWaitlistNotification(studentId, courseId);
             
             return new EnrollmentResult(true, "Course is full. You have been added to the waitlist.", enrollment);
         } else {
@@ -76,11 +75,10 @@ public class EnrollmentService {
             
             // Update course capacity
             course.decrementSeats();
-            serviceClient.put("course", "/courses/" + courseId, course, String.class);
+            AdminServiceRegistry.updateCourse(courseId, course);
             
             // Send enrollment confirmation notification
-            serviceClient.post("notification", "/notifications", 
-                new NotificationRequest(studentId, courseId, "ENROLLMENT_CONFIRMATION"), String.class);
+            NotificationServiceRegistry.sendEnrollmentConfirmation(studentId, courseId);
             
             return new EnrollmentResult(true, "Enrollment successful", enrollment);
         }
@@ -105,21 +103,20 @@ public class EnrollmentService {
         studentRepository.save(student);
         
         // Get course information to update capacity
-        ServiceResponse<Course> courseResponse = serviceClient.get("course", "/courses/" + courseId, Course.class);
+        ServiceResponse<Course> courseResponse = CourseServiceRegistry.getCourse(courseId);
         if (courseResponse.isSuccess()) {
             Course course = courseResponse.getData();
             course.incrementSeats();
             
-            // Update course in Course Service
-            serviceClient.put("course", "/courses/" + courseId, course, String.class);
+            // Update course in Course Service using AdminServiceRegistry
+            AdminServiceRegistry.updateCourse(courseId, course);
             
             // Process waitlist - find the next waitlisted student
             processWaitlist(courseId);
         }
         
         // Send drop confirmation notification
-        serviceClient.post("notification", "/notifications", 
-            new NotificationRequest(studentId, courseId, "DROP_CONFIRMATION"), String.class);
+        NotificationServiceRegistry.sendDropConfirmation(studentId, courseId);
         
         return new EnrollmentResult(true, "Course dropped successfully", enrollment);
     }
@@ -137,7 +134,7 @@ public class EnrollmentService {
         // Fetch course details from Course Service for each waitlisted course
         List<Course> waitlistedCourses = new ArrayList<>();
         for (Long courseId : waitlistedCourseIds) {
-            ServiceResponse<Course> courseResponse = serviceClient.get("course", "/courses/" + courseId, Course.class);
+            ServiceResponse<Course> courseResponse = CourseServiceRegistry.getCourse(courseId);
             if (courseResponse.isSuccess()) {
                 waitlistedCourses.add(courseResponse.getData());
             }
@@ -154,7 +151,7 @@ public class EnrollmentService {
                 .orElseThrow(() -> new NotFoundException("Student", studentId));
         
         // Check if course exists
-        ServiceResponse<Course> courseResponse = serviceClient.get("course", "/courses/" + courseId, Course.class);
+        ServiceResponse<Course> courseResponse = CourseServiceRegistry.getCourse(courseId);
         if (!courseResponse.isSuccess()) {
             return new EnrollmentResult(false, "Course not found: " + courseResponse.getMessage(), null);
         }
@@ -175,8 +172,7 @@ public class EnrollmentService {
         studentRepository.save(student);
         
         // Send waitlist notification
-        serviceClient.post("notification", "/notifications", 
-            new NotificationRequest(studentId, courseId, "WAITLIST_CONFIRMATION"), String.class);
+        NotificationServiceRegistry.sendWaitlistNotification(studentId, courseId);
         
         return new EnrollmentResult(true, "Successfully added to waitlist", enrollment);
     }
@@ -211,33 +207,15 @@ public class EnrollmentService {
             studentRepository.save(nextStudent);
             
             // Update course capacity
-            ServiceResponse<Course> courseResponse = serviceClient.get("course", "/courses/" + courseId, Course.class);
+            ServiceResponse<Course> courseResponse = CourseServiceRegistry.getCourse(courseId);
             if (courseResponse.isSuccess()) {
                 Course course = courseResponse.getData();
                 course.decrementSeats();
-                serviceClient.put("course", "/courses/" + courseId, course, String.class);
+                AdminServiceRegistry.updateCourse(courseId, course);
             }
             
             // Send notification to the student that they've been enrolled from waitlist
-            serviceClient.post("notification", "/notifications", 
-                new NotificationRequest(nextStudent.getId(), courseId, "WAITLIST_ENROLLMENT_AVAILABLE"), String.class);
+            NotificationServiceRegistry.sendEnrollmentConfirmation(nextStudent.getId(), courseId);
         }
-    }
-    
-    // Helper class for notification requests
-    private static class NotificationRequest {
-        private final Long studentId;
-        private final Long courseId;
-        private final String notificationType;
-        
-        public NotificationRequest(Long studentId, Long courseId, String notificationType) {
-            this.studentId = studentId;
-            this.courseId = courseId;
-            this.notificationType = notificationType;
-        }
-        
-        public Long getStudentId() { return studentId; }
-        public Long getCourseId() { return courseId; }
-        public String getNotificationType() { return notificationType; }
     }
 }
