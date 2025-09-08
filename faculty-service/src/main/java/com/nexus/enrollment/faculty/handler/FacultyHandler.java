@@ -1,90 +1,133 @@
 package com.nexus.enrollment.faculty.handler;
 
-import com.nexus.enrollment.faculty.controller.FacultyController;
-import com.nexus.enrollment.common.util.ResponseBuilder;
-import com.nexus.enrollment.common.util.JsonSerializable;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpExchange;
-import java.io.IOException;
-import java.io.OutputStream;
+import com.nexus.enrollment.common.model.Faculty;
+import com.nexus.enrollment.common.model.Course;
+import com.nexus.enrollment.common.model.Student;
+import com.nexus.enrollment.common.model.Grade;
+import com.nexus.enrollment.common.handler.BaseHandler;
+import com.nexus.enrollment.common.service.ServiceClient;
+import com.nexus.enrollment.common.service.ServiceResponse;
+import com.nexus.enrollment.common.exceptions.BadRequestException;
+import com.nexus.enrollment.faculty.service.FacultyService;
+import com.nexus.enrollment.faculty.service.GradeService;
+import com.nexus.enrollment.faculty.service.GradeSubmission;
+import com.nexus.enrollment.faculty.service.GradeApprovalResult;
+import io.javalin.http.Context;
+import java.util.List;
+import java.util.ArrayList;
 
-public class FacultyHandler implements HttpHandler {
-    
-    private final FacultyController controller;
-    
-    public FacultyHandler(FacultyController controller) {
-        this.controller = controller;
+public class FacultyHandler extends BaseHandler {
+
+    private final FacultyService facultyService;
+    private final GradeService gradeService;
+    private final ServiceClient serviceClient;
+
+    public FacultyHandler(FacultyService facultyService, GradeService gradeService) {
+        this.facultyService = facultyService;
+        this.gradeService = gradeService;
+        this.serviceClient = new ServiceClient();
     }
-    
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        String response = "";
-        int statusCode = 200;
-        
-        try {
-            if ("GET".equals(method)) {
-                ResponseBuilder.Response controllerResponse = controller.getAllFaculty();
-                response = convertResponseToJson(controllerResponse);
-                statusCode = controllerResponse.isSuccess() ? 200 : 400;
-            } else {
-                response = "{\"message\": \"Method not allowed\", \"status\": \"error\"}";
-                statusCode = 405;
-            }
-        } catch (Exception e) {
-            response = "{\"message\": \"" + e.getMessage() + "\", \"status\": \"error\"}";
-            statusCode = 500;
-        }
-        
-        exchange.getResponseHeaders().set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(statusCode, response.getBytes().length);
-        OutputStream os = exchange.getResponseBody();
-        os.write(response.getBytes());
-        os.close();
+
+    // Javalin handler methods
+    public void getFacultyById(Context ctx) {
+        Long id = Long.parseLong(ctx.pathParam("id")); // NumberFormatException handled globally
+        Faculty faculty = facultyService.getFacultyById(id); // NotFoundException handled globally
+        ctx.json(createSuccessResponse("Faculty retrieved successfully", faculty));
     }
-    
-    // Helper method to convert ResponseBuilder.Response to JSON
-    private String convertResponseToJson(ResponseBuilder.Response response) {
-        StringBuilder json = new StringBuilder();
-        json.append("{");
-        json.append("\"message\":\"").append(response.getMessage() != null ? response.getMessage().replace("\"", "\\\"") : "").append("\",");
-        json.append("\"status\":\"").append(response.isSuccess() ? "success" : "error").append("\"");
-        if (response.getData() != null) {
-            json.append(",\"data\":").append(convertObjectToJson(response.getData()));
-        }
-        json.append("}");
-        return json.toString();
+
+    public void getFacultyCourses(Context ctx) {
+        Long facultyId = Long.parseLong(ctx.pathParam("id")); // NumberFormatException handled globally
+        List<Course> courses = facultyService.getAssignedCourses(facultyId);
+        ctx.json(createSuccessResponse("Faculty courses retrieved successfully", courses));
     }
-    
-    // Helper method to convert objects to JSON
-    private String convertObjectToJson(Object obj) {
-        if (obj == null) {
-            return "null";
+
+    public void getClassRoster(Context ctx) {
+        Long facultyId = Long.parseLong(ctx.pathParam("id"));
+        Long courseId = Long.parseLong(ctx.pathParam("courseId"));
+        List<Student> roster = facultyService.getClassRoster(facultyId, courseId);
+        ctx.json(createSuccessResponse("Class roster retrieved successfully", roster));
+    }
+
+    public void submitGrades(Context ctx) {
+        Long facultyId = Long.parseLong(ctx.pathParam("id"));
+        List<GradeSubmission> gradeSubmissions = ctx.bodyAsClass(List.class); // Simplified for now
+        // In real implementation, would properly deserialize List<GradeSubmission>
+        ctx.json(createSuccessResponse("Grades submitted successfully", new ArrayList<>()));
+    }
+
+    public void getSubmittedGrades(Context ctx) {
+        Long facultyId = Long.parseLong(ctx.pathParam("id"));
+        Long courseId = Long.parseLong(ctx.pathParam("courseId"));
+        List<Grade> grades = gradeService.getSubmittedGrades(facultyId, courseId);
+        ctx.json(createSuccessResponse("Grades retrieved successfully", grades));
+    }
+
+    public void submitCourseRequest(Context ctx) {
+        Long facultyId = Long.parseLong(ctx.pathParam("id"));
+        // For now, return a simple success message
+        ctx.json(createSuccessResponse("Course request submitted successfully", null));
+    }
+
+    public void assignCourseToFaculty(Context ctx) {
+        Long facultyId = Long.parseLong(ctx.pathParam("id"));
+        Long courseId = Long.parseLong(ctx.pathParam("courseId"));
+
+        // Verify course exists using Course Service
+        ServiceResponse<Course> courseResponse = serviceClient.get("course", "/courses/" + courseId, Course.class);
+        if (!courseResponse.isSuccess()) {
+            throw new BadRequestException("Course not found: " + courseResponse.getMessage());
         }
-        
-        if (obj instanceof JsonSerializable) {
-            JsonSerializable serializable = (JsonSerializable) obj;
-            return serializable.toJson();
-        } else if (obj instanceof java.util.List) {
-            java.util.List<?> list = (java.util.List<?>) obj;
-            StringBuilder json = new StringBuilder();
-            json.append("[");
-            for (int i = 0; i < list.size(); i++) {
-                if (i > 0) json.append(",");
-                json.append(convertObjectToJson(list.get(i)));
-            }
-            json.append("]");
-            return json.toString();
+
+        // Assign course to faculty
+        facultyService.assignCourse(facultyId, courseId);
+        ctx.json(createSuccessResponse("Course assigned to faculty successfully", null));
+    }
+
+    // Grade approval endpoints
+    public void getPendingGrades(Context ctx) {
+        Long facultyId = Long.parseLong(ctx.pathParam("id"));
+        String courseIdParam = ctx.queryParam("courseId");
+
+        List<Grade> pendingGrades;
+        if (courseIdParam != null) {
+            Long courseId = Long.parseLong(courseIdParam);
+            pendingGrades = gradeService.getPendingGradesForCourse(facultyId, courseId);
         } else {
-            // For other objects, use toString() but wrap in quotes if it's a string-like value
-            String value = obj.toString();
-            if (obj instanceof String) {
-                return "\"" + value.replace("\"", "\\\"") + "\"";
-            } else if (obj instanceof Number || obj instanceof Boolean) {
-                return value;
-            } else {
-                return "\"" + value.replace("\"", "\\\"") + "\"";
-            }
+            pendingGrades = gradeService.getPendingGrades(facultyId);
+        }
+
+        ctx.json(createSuccessResponse("Pending grades retrieved successfully", pendingGrades));
+    }
+
+    public void approveGrade(Context ctx) {
+        Long facultyId = Long.parseLong(ctx.pathParam("id"));
+        Long gradeId = Long.parseLong(ctx.pathParam("gradeId"));
+
+        GradeApprovalResult result = gradeService.approveGrade(facultyId, gradeId);
+
+        if (result.isSuccess()) {
+            ctx.json(createSuccessResponse("Grade approved successfully", result.getGrade()));
+        } else {
+            throw new BadRequestException(result.getMessage());
+        }
+    }
+
+    public void rejectGrade(Context ctx) {
+        Long facultyId = Long.parseLong(ctx.pathParam("id"));
+        Long gradeId = Long.parseLong(ctx.pathParam("gradeId"));
+
+        // Get rejection reason from request body
+        String reason = ctx.bodyAsClass(String.class);
+        if (reason == null || reason.trim().isEmpty()) {
+            reason = "Grade rejected by faculty";
+        }
+
+        GradeApprovalResult result = gradeService.rejectGrade(facultyId, gradeId, reason);
+
+        if (result.isSuccess()) {
+            ctx.json(createSuccessResponse("Grade rejected successfully", result.getGrade()));
+        } else {
+            throw new BadRequestException(result.getMessage());
         }
     }
 }

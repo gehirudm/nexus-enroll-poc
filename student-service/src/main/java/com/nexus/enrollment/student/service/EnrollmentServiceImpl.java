@@ -7,6 +7,8 @@ import com.nexus.enrollment.common.model.Course;
 import com.nexus.enrollment.common.model.ValidationResult;
 import com.nexus.enrollment.common.enums.EnrollmentStatus;
 import com.nexus.enrollment.common.exceptions.NotFoundException;
+import com.nexus.enrollment.common.service.ServiceClient;
+import com.nexus.enrollment.common.service.ServiceResponse;
 import com.nexus.enrollment.student.repository.StudentRepository;
 import com.nexus.enrollment.student.validator.EnrollmentValidator;
 
@@ -16,16 +18,24 @@ import java.util.ArrayList;
 public class EnrollmentServiceImpl implements EnrollmentService {
     private final StudentRepository studentRepository;
     private final List<EnrollmentValidator> validators;
+    private final ServiceClient serviceClient;
     
     public EnrollmentServiceImpl(StudentRepository studentRepository, List<EnrollmentValidator> validators) {
         this.studentRepository = studentRepository;
         this.validators = validators != null ? validators : new ArrayList<>();
+        this.serviceClient = new ServiceClient();
     }
     
     @Override
     public EnrollmentResult enrollStudent(Long studentId, Long courseId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new NotFoundException("Student", studentId));
+        
+        // Check if course exists using Course Service
+        ServiceResponse<Course> courseResponse = serviceClient.get("course", "/courses/" + courseId, Course.class);
+        if (!courseResponse.isSuccess()) {
+            return new EnrollmentResult(false, "Course not found: " + courseResponse.getMessage(), null);
+        }
         
         // Validation logic using Strategy pattern
         for (EnrollmentValidator validator : validators) {
@@ -47,6 +57,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Enrollment enrollment = new Enrollment(studentId, courseId, EnrollmentStatus.ENROLLED);
         student.getEnrollments().add(enrollment);
         studentRepository.save(student);
+        
+        // Send enrollment confirmation notification
+        serviceClient.post("notification", "/notifications", 
+            new NotificationRequest(studentId, courseId, "ENROLLMENT_CONFIRMATION"), String.class);
         
         return new EnrollmentResult(true, "Enrollment successful", enrollment);
     }
@@ -70,6 +84,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         enrollment.setStatus(EnrollmentStatus.DROPPED);
         studentRepository.save(student);
         
+        // Send drop confirmation notification
+        serviceClient.post("notification", "/notifications", 
+            new NotificationRequest(studentId, courseId, "DROP_CONFIRMATION"), String.class);
+        
         return new EnrollmentResult(true, "Course dropped successfully", enrollment);
     }
     
@@ -78,8 +96,38 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new NotFoundException("Student", studentId));
         
-        // For now, return empty list since we don't have course service integration yet
-        // In real implementation, this would fetch course details for waitlisted enrollments
-        return new ArrayList<>();
+        // Get waitlisted enrollments for this student
+        List<Long> waitlistedCourseIds = student.getEnrollments().stream()
+                .filter(e -> e.getStatus() == EnrollmentStatus.WAITLISTED)
+                .map(Enrollment::getCourseId)
+                .toList();
+        
+        // Fetch course details from Course Service for each waitlisted course
+        List<Course> waitlistedCourses = new ArrayList<>();
+        for (Long courseId : waitlistedCourseIds) {
+            ServiceResponse<Course> courseResponse = serviceClient.get("course", "/courses/" + courseId, Course.class);
+            if (courseResponse.isSuccess()) {
+                waitlistedCourses.add(courseResponse.getData());
+            }
+        }
+        
+        return waitlistedCourses;
+    }
+    
+    // Helper class for notification requests
+    private static class NotificationRequest {
+        private final Long studentId;
+        private final Long courseId;
+        private final String notificationType;
+        
+        public NotificationRequest(Long studentId, Long courseId, String notificationType) {
+            this.studentId = studentId;
+            this.courseId = courseId;
+            this.notificationType = notificationType;
+        }
+        
+        public Long getStudentId() { return studentId; }
+        public Long getCourseId() { return courseId; }
+        public String getNotificationType() { return notificationType; }
     }
 }

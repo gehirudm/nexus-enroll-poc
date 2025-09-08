@@ -1,0 +1,577 @@
+{
+	"info": {
+		"_postman_id": "faculty-service-grade-approval",
+		"name": "Faculty Service with Grade Approval",
+		"description": "Complete Faculty Service API collection including grade approval workflow",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "faculty_base_url",
+			"value": "http://localhost:8083",
+			"type": "string"
+		},
+		{
+			"key": "faculty_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "course_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "grade_id",
+			"value": "1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Faculty Operations",
+			"item": [
+				{
+					"name": "Get Faculty by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has faculty data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.have.property('name');",
+									"    pm.expect(jsonData.data).to.have.property('email');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{faculty_base_url}}/faculty/{{faculty_id}}",
+							"host": [
+								"{{faculty_base_url}}"
+							],
+							"path": [
+								"faculty",
+								"{{faculty_id}}"
+							]
+						},
+						"description": "Retrieve faculty member information by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Faculty Courses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has courses data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{faculty_base_url}}/faculty/{{faculty_id}}/courses",
+							"host": [
+								"{{faculty_base_url}}"
+							],
+							"path": [
+								"faculty",
+								"{{faculty_id}}",
+								"courses"
+							]
+						},
+						"description": "Get list of courses assigned to a faculty member"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Class Roster",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has roster data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{faculty_base_url}}/faculty/{{faculty_id}}/roster/{{course_id}}",
+							"host": [
+								"{{faculty_base_url}}"
+							],
+							"path": [
+								"faculty",
+								"{{faculty_id}}",
+								"roster",
+								"{{course_id}}"
+							]
+						},
+						"description": "Get list of students enrolled in a specific course"
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Course to Faculty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Course assigned successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('assigned');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{faculty_base_url}}/faculty/{{faculty_id}}/courses/{{course_id}}",
+							"host": [
+								"{{faculty_base_url}}"
+							],
+							"path": [
+								"faculty",
+								"{{faculty_id}}",
+								"courses",
+								"{{course_id}}"
+							]
+						},
+						"description": "Assign a course to a faculty member"
+					},
+					"response": []
+				}
+			],
+			"description": "Basic faculty management operations"
+		},
+		{
+			"name": "Grade Operations",
+			"item": [
+				{
+					"name": "Submit Grades (PENDING Status)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Grades submitted with PENDING status\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('submitted');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"studentId\": 1,\n        \"courseId\": 1,\n        \"grade\": \"A\",\n        \"semester\": \"Fall 2024\"\n    },\n    {\n        \"studentId\": 2,\n        \"courseId\": 1,\n        \"grade\": \"B+\",\n        \"semester\": \"Fall 2024\"\n    }\n]"
+						},
+						"url": {
+							"raw": "{{faculty_base_url}}/faculty/{{faculty_id}}/grades",
+							"host": [
+								"{{faculty_base_url}}"
+							],
+							"path": [
+								"faculty",
+								"{{faculty_id}}",
+								"grades"
+							]
+						},
+						"description": "Submit grades for students (initially set to PENDING status)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Submitted Grades",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has grades data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{faculty_base_url}}/faculty/{{faculty_id}}/grades/{{course_id}}",
+							"host": [
+								"{{faculty_base_url}}"
+							],
+							"path": [
+								"faculty",
+								"{{faculty_id}}",
+								"grades",
+								"{{course_id}}"
+							]
+						},
+						"description": "Get all submitted grades for a specific course"
+					},
+					"response": []
+				}
+			],
+			"description": "Standard grade management operations"
+		},
+		{
+			"name": "Grade Approval Workflow",
+			"item": [
+				{
+					"name": "Get Pending Grades (All)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has pending grades\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    pm.expect(jsonData.message).to.include('Pending grades');",
+									"});",
+									"",
+									"// Store first grade ID for approval testing",
+									"pm.test(\"Store grade ID for approval\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.length > 0) {",
+									"        pm.collectionVariables.set('grade_id', jsonData.data[0].id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{faculty_base_url}}/faculty/{{faculty_id}}/grades/pending",
+							"host": [
+								"{{faculty_base_url}}"
+							],
+							"path": [
+								"faculty",
+								"{{faculty_id}}",
+								"grades",
+								"pending"
+							]
+						},
+						"description": "Get all pending grades for a faculty member across all courses"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pending Grades (Specific Course)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has pending grades for course\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{faculty_base_url}}/faculty/{{faculty_id}}/grades/pending?courseId={{course_id}}",
+							"host": [
+								"{{faculty_base_url}}"
+							],
+							"path": [
+								"faculty",
+								"{{faculty_id}}",
+								"grades",
+								"pending"
+							],
+							"query": [
+								{
+									"key": "courseId",
+									"value": "{{course_id}}"
+								}
+							]
+						},
+						"description": "Get pending grades for a specific course taught by faculty"
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Grade",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Grade approved successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('approved');",
+									"    pm.expect(jsonData.data).to.have.property('status');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{faculty_base_url}}/faculty/{{faculty_id}}/grades/{{grade_id}}/approve",
+							"host": [
+								"{{faculty_base_url}}"
+							],
+							"path": [
+								"faculty",
+								"{{faculty_id}}",
+								"grades",
+								"{{grade_id}}",
+								"approve"
+							]
+						},
+						"description": "Approve a pending grade (transitions from PENDING to SUBMITTED status)"
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Grade",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Grade rejected successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('rejected');",
+									"    pm.expect(jsonData.data).to.have.property('status');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\"Grade needs correction - incorrect calculation\""
+						},
+						"url": {
+							"raw": "{{faculty_base_url}}/faculty/{{faculty_id}}/grades/{{grade_id}}/reject",
+							"host": [
+								"{{faculty_base_url}}"
+							],
+							"path": [
+								"faculty",
+								"{{faculty_id}}",
+								"grades",
+								"{{grade_id}}",
+								"reject"
+							]
+						},
+						"description": "Reject a pending grade with reason (transitions from PENDING to REJECTED status)"
+					},
+					"response": []
+				}
+			],
+			"description": "New grade approval workflow endpoints implementing PENDING -> SUBMITTED/REJECTED state transitions"
+		},
+		{
+			"name": "Course Requests",
+			"item": [
+				{
+					"name": "Submit Course Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Course request submitted\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('request submitted');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"requestType\": \"ASSIGNMENT_CHANGE\",\n    \"requestedCourseId\": 3,\n    \"reason\": \"Expertise in advanced mathematics\",\n    \"priority\": \"HIGH\"\n}"
+						},
+						"url": {
+							"raw": "{{faculty_base_url}}/faculty/{{faculty_id}}/course-request",
+							"host": [
+								"{{faculty_base_url}}"
+							],
+							"path": [
+								"faculty",
+								"{{faculty_id}}",
+								"course-request"
+							]
+						},
+						"description": "Submit a course assignment change request"
+					},
+					"response": []
+				}
+			],
+			"description": "Course assignment request operations"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default values if not already set",
+					"if (!pm.collectionVariables.get('faculty_base_url')) {",
+					"    pm.collectionVariables.set('faculty_base_url', 'http://localhost:8083');",
+					"}",
+					"if (!pm.collectionVariables.get('faculty_id')) {",
+					"    pm.collectionVariables.set('faculty_id', '1');",
+					"}",
+					"if (!pm.collectionVariables.get('course_id')) {",
+					"    pm.collectionVariables.set('course_id', '1');",
+					"}",
+					"if (!pm.collectionVariables.get('grade_id')) {",
+					"    pm.collectionVariables.set('grade_id', '1');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test for all requests",
+					"pm.test(\"Response time is less than 2000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+					"});",
+					"",
+					"pm.test(\"Response is JSON\", function () {",
+					"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"});"
+				]
+			}
+		}
+	]
+}

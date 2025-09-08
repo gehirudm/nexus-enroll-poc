@@ -1,61 +1,73 @@
 package com.nexus.enrollment.faculty;
 
 import com.nexus.enrollment.common.model.Faculty;
+import com.nexus.enrollment.common.web.WebServer;
 import com.nexus.enrollment.faculty.repository.FacultyRepository;
 import com.nexus.enrollment.faculty.repository.InMemoryFacultyRepository;
+import com.nexus.enrollment.faculty.repository.GradeRepository;
+import com.nexus.enrollment.faculty.repository.InMemoryGradeRepository;
 import com.nexus.enrollment.faculty.service.FacultyService;
-import com.nexus.enrollment.faculty.service.FacultyServiceImpl;
 import com.nexus.enrollment.faculty.service.GradeService;
-import com.nexus.enrollment.faculty.service.GradeServiceImpl;
-import com.nexus.enrollment.faculty.controller.FacultyController;
 import com.nexus.enrollment.faculty.handler.FacultyHandler;
-import com.nexus.enrollment.faculty.handler.FacultyByIdHandler;
-import com.sun.net.httpserver.HttpServer;
-import java.io.IOException;
-import java.net.InetSocketAddress;
+import io.javalin.Javalin;
 import java.util.Arrays;
 
 public class FacultyServiceApplication {
     
     private static final int PORT = 8083;
-    private static FacultyController controller;
+    private static FacultyHandler facultyHandler;
     
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         // Initialize repositories
         FacultyRepository facultyRepo = new InMemoryFacultyRepository();
+        GradeRepository gradeRepo = new InMemoryGradeRepository();
         
         // Initialize services
-        FacultyService facultyService = new FacultyServiceImpl(facultyRepo);
-        GradeService gradeService = new GradeServiceImpl();
+        FacultyService facultyService = new FacultyService(facultyRepo);
+        GradeService gradeService = new GradeService(gradeRepo);
         
-        // Initialize controller
-        controller = new FacultyController(facultyService, gradeService);
+        // Initialize handler
+        facultyHandler = new FacultyHandler(facultyService, gradeService);
         
         // Initialize with sample data
         initializeSampleData(facultyRepo);
         
-        // Start HTTP server
-        startHttpServer();
+        // Start Javalin server
+        startJavalinServer();
     }
     
-    private static void startHttpServer() throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+    private static void startJavalinServer() {
+        Javalin app = WebServer.createAndConfigureServer();
         
-        // Faculty Service Endpoints
-        server.createContext("/faculty", new FacultyHandler(controller));
-        server.createContext("/faculty/", new FacultyByIdHandler(controller));
-        
-        server.setExecutor(null);
-        server.start();
+        app.start(PORT);
         
         System.out.println("Faculty Service started on port " + PORT);
         System.out.println("Available endpoints:");
+        
+        // Faculty Service Endpoints using FacultyHandler methods
+        app.get("/faculty/{id}", facultyHandler::getFacultyById);
+        app.get("/faculty/{id}/courses", facultyHandler::getFacultyCourses);
+        app.get("/faculty/{id}/roster/{courseId}", facultyHandler::getClassRoster);
+        app.post("/faculty/{id}/grades", facultyHandler::submitGrades);
+        app.get("/faculty/{id}/grades/{courseId}", facultyHandler::getSubmittedGrades);
+        app.put("/faculty/{id}/course-request", facultyHandler::submitCourseRequest);
+        app.post("/faculty/{id}/courses/{courseId}", facultyHandler::assignCourseToFaculty);
+        
+        // Grade approval endpoints
+        app.get("/faculty/{id}/grades/pending", facultyHandler::getPendingGrades);
+        app.post("/faculty/{id}/grades/{gradeId}/approve", facultyHandler::approveGrade);
+        app.post("/faculty/{id}/grades/{gradeId}/reject", facultyHandler::rejectGrade);
+        
         System.out.println("  GET /faculty/{id} - Get faculty by ID");
         System.out.println("  GET /faculty/{id}/courses - Get faculty's assigned courses");
         System.out.println("  GET /faculty/{id}/roster/{courseId} - Get class roster for a course");
         System.out.println("  POST /faculty/{id}/grades - Submit grades for a course");
         System.out.println("  GET /faculty/{id}/grades/{courseId} - Get submitted grades for a course");
         System.out.println("  PUT /faculty/{id}/course-request - Submit course change request");
+        System.out.println("  POST /faculty/{id}/courses/{courseId} - Assign course to faculty");
+        System.out.println("  GET /faculty/{id}/grades/pending - Get pending grades for approval");
+        System.out.println("  POST /faculty/{id}/grades/{gradeId}/approve - Approve a pending grade");
+        System.out.println("  POST /faculty/{id}/grades/{gradeId}/reject - Reject a pending grade");
     }
     
     private static void initializeSampleData(FacultyRepository repo) {
