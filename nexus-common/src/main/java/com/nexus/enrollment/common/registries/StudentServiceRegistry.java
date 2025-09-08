@@ -1,4 +1,4 @@
-package com.nexus.enrollment.student.service;
+package com.nexus.enrollment.common.registries;
 
 import com.nexus.enrollment.common.model.Student;
 import com.nexus.enrollment.common.service.ServiceClient;

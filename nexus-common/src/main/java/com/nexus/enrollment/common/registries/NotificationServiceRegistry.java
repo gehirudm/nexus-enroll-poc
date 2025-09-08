@@ -1,4 +1,4 @@
-package com.nexus.enrollment.notification.service;
+package com.nexus.enrollment.common.registries;
 
 import com.nexus.enrollment.common.service.ServiceClient;
 import com.nexus.enrollment.common.service.ServiceResponse;
