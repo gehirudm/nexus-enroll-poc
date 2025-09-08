@@ -1,0 +1,656 @@
+{
+	"info": {
+		"_postman_id": "student-service-modernized",
+		"name": "Student Service - Modernized",
+		"description": "Complete Student Service API collection with Javalin framework and consolidated services",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "student_base_url",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "student_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "course_id",
+			"value": "101",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Student Management",
+			"item": [
+				{
+					"name": "Get All Students",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has students data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    pm.expect(jsonData.message).to.include('Students retrieved');",
+									"});",
+									"",
+									"// Store first student ID for other tests",
+									"pm.test(\"Store student ID\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.length > 0) {",
+									"        pm.collectionVariables.set('student_id', jsonData.data[0].id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{student_base_url}}/students",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students"
+							]
+						},
+						"description": "Retrieve all students in the system"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has student data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.have.property('name');",
+									"    pm.expect(jsonData.data).to.have.property('email');",
+									"    pm.expect(jsonData.data).to.have.property('major');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{student_base_url}}/students/{{student_id}}",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students",
+								"{{student_id}}"
+							]
+						},
+						"description": "Retrieve a specific student by their ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Student created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('created');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"});",
+									"",
+									"// Store created student ID",
+									"pm.test(\"Store created student ID\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set('new_student_id', jsonData.data.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Alice Johnson\",\n    \"email\": \"alice.johnson@university.edu\",\n    \"major\": \"Computer Science\"\n}"
+						},
+						"url": {
+							"raw": "{{student_base_url}}/students",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students"
+							]
+						},
+						"description": "Create a new student"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Student updated successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('updated');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe Updated\",\n    \"email\": \"john.doe.updated@university.edu\",\n    \"major\": \"Software Engineering\"\n}"
+						},
+						"url": {
+							"raw": "{{student_base_url}}/students/{{student_id}}",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students",
+								"{{student_id}}"
+							]
+						},
+						"description": "Update an existing student's information"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Student deleted successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('deleted');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{student_base_url}}/students/{{student_id}}",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students",
+								"{{student_id}}"
+							]
+						},
+						"description": "Delete a student from the system (use with caution)"
+					},
+					"response": []
+				}
+			],
+			"description": "Basic student CRUD operations"
+		},
+		{
+			"name": "Student Academic Info",
+			"item": [
+				{
+					"name": "Get Student Schedule",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has schedule data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.have.property('dayOfWeek');",
+									"    pm.expect(jsonData.data).to.have.property('startTime');",
+									"    pm.expect(jsonData.data).to.have.property('endTime');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{student_base_url}}/students/{{student_id}}/schedule",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students",
+								"{{student_id}}",
+								"schedule"
+							]
+						},
+						"description": "Get a student's class schedule"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student Enrollments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has enrollments data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{student_base_url}}/students/{{student_id}}/enrollments",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students",
+								"{{student_id}}",
+								"enrollments"
+							]
+						},
+						"description": "Get all enrollments for a student"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Waitlisted Courses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has waitlisted courses\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{student_base_url}}/students/{{student_id}}/waitlisted",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students",
+								"{{student_id}}",
+								"waitlisted"
+							]
+						},
+						"description": "Get courses the student is waitlisted for"
+					},
+					"response": []
+				}
+			],
+			"description": "Student academic information and course-related data"
+		},
+		{
+			"name": "Waitlist Management",
+			"item": [
+				{
+					"name": "Add to Waitlist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has waitlist result\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.message).to.include('waitlist');",
+									"    pm.expect(jsonData.data).to.have.property('status', 'WAITLISTED');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{student_base_url}}/students/{{student_id}}/waitlist/{{course_id}}",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students",
+								"{{student_id}}",
+								"waitlist",
+								"{{course_id}}"
+							]
+						},
+						"description": "Manually add a student to the waitlist for a course"
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll in Full Course (Auto-Waitlist)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates enrollment or waitlist\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    // Message should indicate either enrollment or waitlist",
+									"    pm.expect(jsonData.message).to.satisfy(function(msg) {",
+									"        return msg.includes('successful') || msg.includes('waitlist');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{student_base_url}}/students/{{student_id}}/enroll/{{course_id}}",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students",
+								"{{student_id}}",
+								"enroll",
+								"{{course_id}}"
+							]
+						},
+						"description": "Attempt to enroll in a course - will automatically add to waitlist if course is full"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Waitlisted Courses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has waitlisted courses\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"    pm.expect(jsonData.message).to.include('Waitlisted courses');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{student_base_url}}/students/{{student_id}}/waitlisted",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students",
+								"{{student_id}}",
+								"waitlisted"
+							]
+						},
+						"description": "Get courses the student is waitlisted for"
+					},
+					"response": []
+				}
+			],
+			"description": "Student waitlist management operations with automatic notification system"
+		},
+		{
+			"name": "Enrollment Operations",
+			"item": [
+				{
+					"name": "Enroll in Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 400\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+									"});",
+									"",
+									"pm.test(\"Response has enrollment result\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"});",
+									"",
+									"pm.test(\"Check enrollment success\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success) {",
+									"        pm.expect(jsonData.message).to.include('successful');",
+									"        pm.expect(jsonData.data).to.have.property('status');",
+									"    } else {",
+									"        pm.expect(jsonData.message).to.be.a('string');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{student_base_url}}/students/{{student_id}}/enroll/{{course_id}}",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students",
+								"{{student_id}}",
+								"enroll",
+								"{{course_id}}"
+							]
+						},
+						"description": "Enroll a student in a course (automatically handles waitlisting if course is full)"
+					},
+					"response": []
+				},
+				{
+					"name": "Drop Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 400\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+									"});",
+									"",
+									"pm.test(\"Response has drop result\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"});",
+									"",
+									"pm.test(\"Check drop success\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.success) {",
+									"        pm.expect(jsonData.message).to.include('dropped');",
+									"        pm.expect(jsonData.data).to.have.property('status');",
+									"    } else {",
+									"        pm.expect(jsonData.message).to.be.a('string');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{student_base_url}}/students/{{student_id}}/drop/{{course_id}}",
+							"host": [
+								"{{student_base_url}}"
+							],
+							"path": [
+								"students",
+								"{{student_id}}",
+								"drop",
+								"{{course_id}}"
+							]
+						},
+						"description": "Drop a student from a course (automatically processes waitlist if spots become available)"
+					},
+					"response": []
+				}
+			],
+			"description": "Course enrollment and drop operations"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default values if not already set",
+					"if (!pm.collectionVariables.get('student_base_url')) {",
+					"    pm.collectionVariables.set('student_base_url', 'http://localhost:8081');",
+					"}",
+					"if (!pm.collectionVariables.get('student_id')) {",
+					"    pm.collectionVariables.set('student_id', '1');",
+					"}",
+					"if (!pm.collectionVariables.get('course_id')) {",
+					"    pm.collectionVariables.set('course_id', '101');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test for all requests",
+					"pm.test(\"Response time is less than 2000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+					"});",
+					"",
+					"pm.test(\"Response is JSON\", function () {",
+					"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"});"
+				]
+			}
+		}
+	]
+}

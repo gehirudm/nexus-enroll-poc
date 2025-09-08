@@ -3,29 +3,24 @@ package com.nexus.enrollment.student;
 import com.nexus.enrollment.common.model.Student;
 import com.nexus.enrollment.common.model.Enrollment;
 import com.nexus.enrollment.common.enums.EnrollmentStatus;
+import com.nexus.enrollment.common.web.WebServer;
 import com.nexus.enrollment.student.repository.StudentRepository;
 import com.nexus.enrollment.student.repository.InMemoryStudentRepository;
 import com.nexus.enrollment.student.service.StudentService;
-import com.nexus.enrollment.student.service.StudentServiceImpl;
 import com.nexus.enrollment.student.service.EnrollmentService;
-import com.nexus.enrollment.student.service.EnrollmentServiceImpl;
 import com.nexus.enrollment.student.validator.EnrollmentValidator;
 import com.nexus.enrollment.student.validator.PrerequisiteValidator;
-import com.nexus.enrollment.student.controller.StudentController;
-import com.nexus.enrollment.student.handler.StudentsHandler;
-import com.nexus.enrollment.student.handler.StudentByIdHandler;
-import com.sun.net.httpserver.HttpServer;
-import java.io.IOException;
-import java.net.InetSocketAddress;
+import com.nexus.enrollment.student.handler.StudentHandler;
+import io.javalin.Javalin;
 import java.util.Arrays;
 import java.util.List;
 
 public class StudentServiceApplication {
     
     private static final int PORT = 8081;
-    private static StudentController controller;
+    private static StudentHandler studentHandler;
     
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         // Initialize repositories
         StudentRepository studentRepo = new InMemoryStudentRepository();
         
@@ -33,38 +28,51 @@ public class StudentServiceApplication {
         List<EnrollmentValidator> validators = Arrays.asList(new PrerequisiteValidator());
         
         // Initialize services
-        StudentService studentService = new StudentServiceImpl(studentRepo);
-        EnrollmentService enrollmentService = new EnrollmentServiceImpl(studentRepo, validators);
+        StudentService studentService = new StudentService(studentRepo);
+        EnrollmentService enrollmentService = new EnrollmentService(studentRepo, validators);
         
-        // Initialize controller
-        controller = new StudentController(studentService, enrollmentService);
+        // Initialize handler
+        studentHandler = new StudentHandler(studentService, enrollmentService);
         
         // Initialize with sample data
         initializeSampleData(studentRepo);
         
-        // Start HTTP server
-        startHttpServer();
+        // Start Javalin server
+        startJavalinServer();
     }
     
-    private static void startHttpServer() throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+    private static void startJavalinServer() {
+        Javalin app = WebServer.createAndConfigureServer();
         
-        // Student Service Endpoints
-        server.createContext("/students", new StudentsHandler(controller));
-        server.createContext("/students/", new StudentByIdHandler(controller));
-        
-        server.setExecutor(null);
-        server.start();
+        app.start(PORT);
         
         System.out.println("Student Service started on port " + PORT);
         System.out.println("Available endpoints:");
+        
+        // Student Service Endpoints using StudentHandler methods
+        app.get("/students", studentHandler::getAllStudents);
+        app.post("/students", studentHandler::createStudent);
+        app.get("/students/{id}", studentHandler::getStudentById);
+        app.put("/students/{id}", studentHandler::updateStudent);
+        app.delete("/students/{id}", studentHandler::deleteStudent);
+        app.get("/students/{id}/schedule", studentHandler::getStudentSchedule);
+        app.get("/students/{id}/enrollments", studentHandler::getStudentEnrollments);
+        app.post("/students/{id}/enroll/{courseId}", studentHandler::enrollStudent);
+        app.delete("/students/{id}/drop/{courseId}", studentHandler::dropCourse);
+        app.get("/students/{id}/waitlisted", studentHandler::getWaitlistedCourses);
+        app.post("/students/{id}/waitlist/{courseId}", studentHandler::addToWaitlist);
+        
         System.out.println("  GET /students - Get all students");
         System.out.println("  POST /students - Create new student");
         System.out.println("  GET /students/{id} - Get student by ID");
+        System.out.println("  PUT /students/{id} - Update student");
+        System.out.println("  DELETE /students/{id} - Delete student");
         System.out.println("  GET /students/{id}/schedule - Get student's schedule");
         System.out.println("  GET /students/{id}/enrollments - Get student's enrollments");
-        System.out.println("  POST /students/{id}/enroll/{courseId} - Enroll in course");
+        System.out.println("  POST /students/{id}/enroll/{courseId} - Enroll in course (or add to waitlist if full)");
         System.out.println("  DELETE /students/{id}/drop/{courseId} - Drop course");
+        System.out.println("  GET /students/{id}/waitlisted - Get waitlisted courses");
+        System.out.println("  POST /students/{id}/waitlist/{courseId} - Manually add to waitlist");
     }
     
     private static void initializeSampleData(StudentRepository repo) {
