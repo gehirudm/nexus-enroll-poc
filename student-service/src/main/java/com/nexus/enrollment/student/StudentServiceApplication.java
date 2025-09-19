@@ -76,28 +76,57 @@ public class StudentServiceApplication {
     }
     
     private static void initializeSampleData(StudentRepository repo) {
-        Student student1 = new Student("John Doe", "john.doe@example.com", "Computer Science");
-        Student student2 = new Student("Jane Smith", "jane.smith@example.com", "Mathematics");
-        Student student3 = new Student("Bob Wilson", "bob.wilson@example.com", "Physics");
+        Student student1 = new Student("John Doe", "john.doe@example.com", "Computer Science", "Software Engineering");
+        Student student2 = new Student("Jane Smith", "jane.smith@example.com", "Mathematics", "Applied Mathematics");
+        Student student3 = new Student("Bob Wilson", "bob.wilson@example.com", "Physics", "Theoretical Physics");
         
         // Add some sample enrollments to make the schedule more realistic
-        Enrollment enrollment1 = new Enrollment(1L, 101L, EnrollmentStatus.ENROLLED);
+        // Use course IDs that actually exist in Course Service (1, 2, 3)
+        Enrollment enrollment1 = new Enrollment(1L, 1L, EnrollmentStatus.ENROLLED);  // CS101
         enrollment1.setId(1L);
         
-        Enrollment enrollment2 = new Enrollment(1L, 102L, EnrollmentStatus.ENROLLED);
+        Enrollment enrollment2 = new Enrollment(1L, 2L, EnrollmentStatus.ENROLLED);  // MATH201
         enrollment2.setId(2L);
         
-        Enrollment enrollment3 = new Enrollment(2L, 101L, EnrollmentStatus.ENROLLED);
+        // Add waitlisted enrollments for student1 using existing course IDs
+        Enrollment waitlisted1 = new Enrollment(1L, 3L, EnrollmentStatus.WAITLISTED);  // PHYS101
+        waitlisted1.setId(4L);
+        
+        Enrollment enrollment3 = new Enrollment(2L, 1L, EnrollmentStatus.ENROLLED);  // CS101
         enrollment3.setId(3L);
+        
+        // Add waitlisted enrollment for student2
+        Enrollment waitlisted2 = new Enrollment(2L, 2L, EnrollmentStatus.WAITLISTED);  // MATH201
+        waitlisted2.setId(5L);
+        
+        Enrollment waitlisted3 = new Enrollment(2L, 3L, EnrollmentStatus.WAITLISTED);  // PHYS101
+        waitlisted3.setId(6L);
+        
+        // Add waitlisted enrollment for student3
+        Enrollment waitlisted4 = new Enrollment(3L, 1L, EnrollmentStatus.WAITLISTED);  // CS101
+        waitlisted4.setId(7L);
+        
+        Enrollment waitlisted5 = new Enrollment(3L, 2L, EnrollmentStatus.WAITLISTED);  // MATH201
+        waitlisted5.setId(8L);
         
         student1.getEnrollments().add(enrollment1);
         student1.getEnrollments().add(enrollment2);
+        student1.getEnrollments().add(waitlisted1);
+        
         student2.getEnrollments().add(enrollment3);
+        student2.getEnrollments().add(waitlisted2);
+        student2.getEnrollments().add(waitlisted3);
+        
+        student3.getEnrollments().add(waitlisted4);
+        student3.getEnrollments().add(waitlisted5);
         
         repo.save(student1);
         repo.save(student2);
         repo.save(student3);
         
-        System.out.println("Sample data initialized - 3 students created with sample enrollments");
+        System.out.println("Sample data initialized - 3 students created with sample enrollments and waitlisted courses");
+        System.out.println("Student 1 (John Doe): Enrolled in CS101, MATH201; Waitlisted for PHYS101");
+        System.out.println("Student 2 (Jane Smith): Enrolled in CS101; Waitlisted for MATH201, PHYS101");
+        System.out.println("Student 3 (Bob Wilson): Waitlisted for CS101, MATH201");
     }
 }

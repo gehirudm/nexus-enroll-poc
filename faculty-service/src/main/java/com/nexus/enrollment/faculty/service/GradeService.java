@@ -22,7 +22,7 @@ public class GradeService {
                 Grade grade = new Grade(
                     submission.getStudentId(),
                     submission.getCourseId(),
-                    submission.getGradeValue(),
+                    submission.getGrade(),  // Changed from getGradeValue() to getGrade()
                     facultyId
                 );
                 grade.setStatus(GradeStatus.PENDING); // Initial status is PENDING, requires approval

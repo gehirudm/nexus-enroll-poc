@@ -35,9 +35,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/admin/students",
+					"raw": "{{admin_service_url}}/admin/students",
 					"host": [
-						"{{baseUrl}}"
+						"{{admin_service_url}}"
 					],
 					"path": [
 						"admin",
@@ -71,9 +71,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/admin/faculty",
+					"raw": "{{admin_service_url}}/admin/faculty",
 					"host": [
-						"{{baseUrl}}"
+						"{{admin_service_url}}"
 					],
 					"path": [
 						"admin",
@@ -107,9 +107,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/admin/reports/enrollment?department={{department}}&semester={{semester}}",
+					"raw": "{{admin_service_url}}/admin/reports/enrollment?department={{department}}&semester={{semester}}",
 					"host": [
-						"{{baseUrl}}"
+						"{{admin_service_url}}"
 					],
 					"path": [
 						"admin",
@@ -154,9 +154,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/admin/reports/faculty-workload",
+					"raw": "{{admin_service_url}}/admin/reports/faculty-workload",
 					"host": [
-						"{{baseUrl}}"
+						"{{admin_service_url}}"
 					],
 					"path": [
 						"admin",
@@ -191,9 +191,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/admin/reports/course-trends",
+					"raw": "{{admin_service_url}}/admin/reports/course-trends",
 					"host": [
-						"{{baseUrl}}"
+						"{{admin_service_url}}"
 					],
 					"path": [
 						"admin",
@@ -237,9 +237,9 @@
 					"raw": "{\n    \"courseCode\": \"ADMIN301\",\n    \"name\": \"Advanced Database Systems\",\n    \"description\": \"Advanced topics in database design and management\",\n    \"department\": \"Computer Science\",\n    \"capacity\": 25,\n    \"instructorId\": 1,\n    \"semester\": \"Spring 2025\"\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/admin/courses",
+					"raw": "{{admin_service_url}}/admin/courses",
 					"host": [
-						"{{baseUrl}}"
+						"{{admin_service_url}}"
 					],
 					"path": [
 						"admin",
@@ -282,9 +282,9 @@
 					"raw": "{\n    \"name\": \"Updated Course Name\",\n    \"description\": \"Updated course description\",\n    \"capacity\": 35\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/admin/courses/{{courseId}}",
+					"raw": "{{admin_service_url}}/admin/courses/{{courseId}}",
 					"host": [
-						"{{baseUrl}}"
+						"{{admin_service_url}}"
 					],
 					"path": [
 						"admin",
@@ -319,9 +319,9 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/admin/courses/{{courseId}}",
+					"raw": "{{admin_service_url}}/admin/courses/{{courseId}}",
 					"host": [
-						"{{baseUrl}}"
+						"{{admin_service_url}}"
 					],
 					"path": [
 						"admin",
@@ -365,9 +365,9 @@
 					"raw": "{\n    \"reason\": \"Administrative override\",\n    \"overridePrerequisites\": true\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/admin/students/{{studentId}}/force-enroll/{{courseId}}",
+					"raw": "{{admin_service_url}}/admin/students/{{studentId}}/force-enroll/{{courseId}}",
 					"host": [
-						"{{baseUrl}}"
+						"{{admin_service_url}}"
 					],
 					"path": [
 						"admin",

@@ -44,22 +44,23 @@ public class CourseServiceApplication {
         System.out.println("Available endpoints:");
         
         // Course Service Endpoints using CoursesHandler methods
+        // Note: More specific routes must come before parameterized routes
         app.get("/courses", coursesHandler::getAllCourses);
-        app.get("/courses/{id}", coursesHandler::getCourseById);
-        app.get("/courses/department/{dept}", coursesHandler::getCoursesByDepartment);
-        app.get("/courses/instructor/{facultyId}", coursesHandler::getCoursesByInstructor);
         app.get("/courses/search", coursesHandler::searchCourses);
         app.get("/courses/available", coursesHandler::getAvailableCourses);
+        app.get("/courses/department/{dept}", coursesHandler::getCoursesByDepartment);
+        app.get("/courses/instructor/{facultyId}", coursesHandler::getCoursesByInstructor);
+        app.get("/courses/{id}", coursesHandler::getCourseById);
         app.get("/courses/{id}/prerequisites", coursesHandler::getCoursePrerequisites);
         app.get("/courses/{id}/enrollments", coursesHandler::getCourseEnrollments);
         app.post("/courses", coursesHandler::createCourse);
         
         System.out.println("  GET /courses - Get all courses");
-        System.out.println("  GET /courses/{id} - Get course by ID");
-        System.out.println("  GET /courses/department/{dept} - Get courses by department");
-        System.out.println("  GET /courses/instructor/{facultyId} - Get courses by instructor");
         System.out.println("  GET /courses/search?keyword={} - Search courses by keyword");
         System.out.println("  GET /courses/available - Get available courses");
+        System.out.println("  GET /courses/department/{dept} - Get courses by department");
+        System.out.println("  GET /courses/instructor/{facultyId} - Get courses by instructor");
+        System.out.println("  GET /courses/{id} - Get course by ID");
         System.out.println("  GET /courses/{id}/prerequisites - Get course prerequisites");
         System.out.println("  GET /courses/{id}/enrollments - Get enrolled students count");
         System.out.println("  POST /courses - Create new course");

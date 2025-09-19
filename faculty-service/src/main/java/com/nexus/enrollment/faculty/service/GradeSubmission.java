@@ -3,14 +3,16 @@ package com.nexus.enrollment.faculty.service;
 public class GradeSubmission {
     private Long studentId;
     private Long courseId;
-    private String gradeValue;
+    private String grade;  // Changed from gradeValue to match Postman
+    private String semester;  // Added to match Postman
     
     public GradeSubmission() {}
     
-    public GradeSubmission(Long studentId, Long courseId, String gradeValue) {
+    public GradeSubmission(Long studentId, Long courseId, String grade, String semester) {
         this.studentId = studentId;
         this.courseId = courseId;
-        this.gradeValue = gradeValue;
+        this.grade = grade;
+        this.semester = semester;
     }
     
     // Getters and setters
@@ -20,6 +22,9 @@ public class GradeSubmission {
     public Long getCourseId() { return courseId; }
     public void setCourseId(Long courseId) { this.courseId = courseId; }
     
-    public String getGradeValue() { return gradeValue; }
-    public void setGradeValue(String gradeValue) { this.gradeValue = gradeValue; }
+    public String getGrade() { return grade; }  // Changed method name
+    public void setGrade(String grade) { this.grade = grade; }  // Changed method name
+    
+    public String getSemester() { return semester; }  // Added
+    public void setSemester(String semester) { this.semester = semester; }  // Added
 }

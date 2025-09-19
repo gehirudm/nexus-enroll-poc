@@ -4,6 +4,9 @@ import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.InternalServerErrorResponse;
 import io.javalin.http.NotFoundResponse;
+import io.javalin.json.JavalinJackson;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nexus.enrollment.common.exceptions.HttpException;
 import com.nexus.enrollment.common.exceptions.InvalidFormatException;
 import com.nexus.enrollment.common.util.ResponseBuilder;
@@ -12,7 +15,10 @@ public class WebServer {
     
     public static Javalin createServer() {
         return Javalin.create(config -> {
-            // Javalin 5.x automatically detects GSON on classpath
+            // Configure Jackson to handle Java 8 date/time types
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            config.jsonMapper(new JavalinJackson(objectMapper));
         });
     }
     

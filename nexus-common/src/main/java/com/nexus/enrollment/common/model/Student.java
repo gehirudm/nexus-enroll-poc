@@ -9,6 +9,7 @@ public class Student implements JsonSerializable {
     private String name;
     private String email;
     private String department;
+    private String major;
     private List<Enrollment> enrollments;
     private List<Grade> grades;
     
@@ -24,6 +25,14 @@ public class Student implements JsonSerializable {
         this.department = department;
     }
     
+    public Student(String name, String email, String department, String major) {
+        this();
+        this.name = name;
+        this.email = email;
+        this.department = department;
+        this.major = major;
+    }
+    
     // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -36,6 +45,9 @@ public class Student implements JsonSerializable {
     
     public String getDepartment() { return department; }
     public void setDepartment(String department) { this.department = department; }
+    
+    public String getMajor() { return major; }
+    public void setMajor(String major) { this.major = major; }
     
     public List<Enrollment> getEnrollments() { return enrollments; }
     public void setEnrollments(List<Enrollment> enrollments) { this.enrollments = enrollments; }
@@ -58,6 +70,7 @@ public class Student implements JsonSerializable {
         json.append("\"name\":\"").append(name != null ? name.replace("\"", "\\\"") : "").append("\",");
         json.append("\"email\":\"").append(email != null ? email.replace("\"", "\\\"") : "").append("\",");
         json.append("\"department\":\"").append(department != null ? department.replace("\"", "\\\"") : "").append("\",");
+        json.append("\"major\":\"").append(major != null ? major.replace("\"", "\\\"") : "").append("\",");
         json.append("\"enrollments\":[");
         if (enrollments != null) {
             for (int i = 0; i < enrollments.size(); i++) {

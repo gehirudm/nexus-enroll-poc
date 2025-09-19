@@ -11,8 +11,12 @@ import com.nexus.enrollment.common.exceptions.BadRequestException;
 import com.nexus.enrollment.faculty.service.FacultyService;
 import com.nexus.enrollment.faculty.service.GradeService;
 import com.nexus.enrollment.faculty.service.GradeSubmission;
+import com.nexus.enrollment.faculty.service.GradeSubmissionResult;
 import com.nexus.enrollment.faculty.service.GradeApprovalResult;
 import io.javalin.http.Context;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -50,9 +54,25 @@ public class FacultyHandler extends BaseHandler {
 
     public void submitGrades(Context ctx) {
         Long facultyId = Long.parseLong(ctx.pathParam("id"));
-        List<GradeSubmission> gradeSubmissions = ctx.bodyAsClass(List.class); // Simplified for now
-        // In real implementation, would properly deserialize List<GradeSubmission>
-        ctx.json(createSuccessResponse("Grades submitted successfully", new ArrayList<>()));
+        
+        try {
+            // Properly deserialize the JSON body
+            String requestBody = ctx.body();
+            Gson gson = new Gson();
+            Type listType = new TypeToken<List<GradeSubmission>>(){}.getType();
+            List<GradeSubmission> gradeSubmissions = gson.fromJson(requestBody, listType);
+            
+            // Call the grade service to actually store the grades
+            GradeSubmissionResult result = gradeService.submitGrades(facultyId, gradeSubmissions);
+            
+            if (result.isSuccess()) {
+                ctx.json(createSuccessResponse(result.getMessage(), result.getSubmittedGrades()));
+            } else {
+                ctx.status(400).json(createErrorResponse(result.getMessage()));
+            }
+        } catch (Exception e) {
+            ctx.status(400).json(createErrorResponse("Failed to submit grades: " + e.getMessage()));
+        }
     }
 
     public void getSubmittedGrades(Context ctx) {

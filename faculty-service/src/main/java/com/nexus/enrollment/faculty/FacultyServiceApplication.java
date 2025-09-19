@@ -49,25 +49,28 @@ public class FacultyServiceApplication {
         app.get("/faculty/{id}/courses", facultyHandler::getFacultyCourses);
         app.get("/faculty/{id}/roster/{courseId}", facultyHandler::getClassRoster);
         app.post("/faculty/{id}/grades", facultyHandler::submitGrades);
-        app.get("/faculty/{id}/grades/{courseId}", facultyHandler::getSubmittedGrades);
-        app.put("/faculty/{id}/course-request", facultyHandler::submitCourseRequest);
-        app.post("/faculty/{id}/courses/{courseId}", facultyHandler::assignCourseToFaculty);
         
-        // Grade approval endpoints
+        // Grade approval endpoints - MUST come before parameterized routes
         app.get("/faculty/{id}/grades/pending", facultyHandler::getPendingGrades);
         app.post("/faculty/{id}/grades/{gradeId}/approve", facultyHandler::approveGrade);
         app.post("/faculty/{id}/grades/{gradeId}/reject", facultyHandler::rejectGrade);
+        
+        // Parameterized grade routes - MUST come after specific routes
+        app.get("/faculty/{id}/grades/{courseId}", facultyHandler::getSubmittedGrades);
+        
+        app.put("/faculty/{id}/course-request", facultyHandler::submitCourseRequest);
+        app.post("/faculty/{id}/courses/{courseId}", facultyHandler::assignCourseToFaculty);
         
         System.out.println("  GET /faculty/{id} - Get faculty by ID");
         System.out.println("  GET /faculty/{id}/courses - Get faculty's assigned courses");
         System.out.println("  GET /faculty/{id}/roster/{courseId} - Get class roster for a course");
         System.out.println("  POST /faculty/{id}/grades - Submit grades for a course");
-        System.out.println("  GET /faculty/{id}/grades/{courseId} - Get submitted grades for a course");
-        System.out.println("  PUT /faculty/{id}/course-request - Submit course change request");
-        System.out.println("  POST /faculty/{id}/courses/{courseId} - Assign course to faculty");
         System.out.println("  GET /faculty/{id}/grades/pending - Get pending grades for approval");
         System.out.println("  POST /faculty/{id}/grades/{gradeId}/approve - Approve a pending grade");
         System.out.println("  POST /faculty/{id}/grades/{gradeId}/reject - Reject a pending grade");
+        System.out.println("  GET /faculty/{id}/grades/{courseId} - Get submitted grades for a course");
+        System.out.println("  PUT /faculty/{id}/course-request - Submit course change request");
+        System.out.println("  POST /faculty/{id}/courses/{courseId} - Assign course to faculty");
     }
     
     private static void initializeSampleData(FacultyRepository repo) {

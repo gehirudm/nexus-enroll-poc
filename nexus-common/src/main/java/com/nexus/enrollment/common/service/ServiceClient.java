@@ -1,8 +1,9 @@
 package com.nexus.enrollment.common.service;
 
 import com.nexus.enrollment.common.util.ResponseBuilder;
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -17,14 +18,18 @@ import java.util.HashMap;
  */
 public class ServiceClient {
     private final HttpClient httpClient;
-    private final Gson gson;
+    private final ObjectMapper objectMapper;
     private final Map<String, String> serviceBaseUrls;
     
     public ServiceClient() {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
-        this.gson = new Gson();
+        
+        // Configure Jackson ObjectMapper with Java 8 time support (same as WebServer)
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+                
         this.serviceBaseUrls = new HashMap<>();
         initializeServiceUrls();
     }
@@ -68,7 +73,7 @@ public class ServiceClient {
     public <T> ServiceResponse<T> post(String serviceName, String endpoint, Object requestBody, Class<T> responseType) {
         try {
             String url = buildUrl(serviceName, endpoint);
-            String jsonBody = gson.toJson(requestBody);
+            String jsonBody = objectMapper.writeValueAsString(requestBody);
             
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -89,7 +94,7 @@ public class ServiceClient {
     public <T> ServiceResponse<T> put(String serviceName, String endpoint, Object requestBody, Class<T> responseType) {
         try {
             String url = buildUrl(serviceName, endpoint);
-            String jsonBody = gson.toJson(requestBody);
+            String jsonBody = objectMapper.writeValueAsString(requestBody);
             
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -137,7 +142,6 @@ public class ServiceClient {
         return baseUrl + endpoint;
     }
     
-    @SuppressWarnings("unchecked")
     private <T> ServiceResponse<T> executeRequest(HttpRequest request, Class<T> responseType) throws IOException, InterruptedException {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         
@@ -146,37 +150,79 @@ public class ServiceClient {
             // Success response
             try {
                 if (responseType == String.class) {
-                    return ServiceResponse.success((T) response.body());
+                    @SuppressWarnings("unchecked")
+                    T result = (T) response.body();
+                    return ServiceResponse.success(result);
                 } else if (responseType == Void.class) {
                     return ServiceResponse.success(null);
                 } else {
-                    // Try to parse as ResponseBuilder.Response first (our standard API response format)
-                    ResponseBuilder.Response apiResponse = gson.fromJson(response.body(), ResponseBuilder.Response.class);
-                    if (apiResponse != null && apiResponse.isSuccess() && apiResponse.getData() != null) {
-                        // Convert the data to the expected type
-                        T data = gson.fromJson(gson.toJson(apiResponse.getData()), responseType);
-                        return ServiceResponse.success(data);
+                    // First, try to extract data from our standard API response format
+                    String responseBody = response.body();
+                    
+                    // More robust check for standard response format
+                    if (responseBody != null && responseBody.trim().startsWith("{") && 
+                        responseBody.contains("\"success\"") && responseBody.contains("\"data\"")) {
+                        try {
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> responseMap = objectMapper.readValue(responseBody, Map.class);
+                            
+                            if (responseMap != null) {
+                                Object successValue = responseMap.get("success");
+                                if (Boolean.TRUE.equals(successValue)) {
+                                    Object dataObject = responseMap.get("data");
+                                    if (dataObject != null) {
+                                        // Use Jackson's convertValue for efficient type conversion
+                                        T data = objectMapper.convertValue(dataObject, responseType);
+                                        return ServiceResponse.success(data);
+                                    } else {
+                                        return ServiceResponse.success(null);
+                                    }
+                                } else {
+                                    // Handle error response
+                                    Object messageValue = responseMap.get("message");
+                                    String errorMessage = messageValue != null ? messageValue.toString() : "Unknown error";
+                                    return ServiceResponse.error(errorMessage);
+                                }
+                            } else {
+                                // responseMap is null - treat as error
+                                return ServiceResponse.error("Invalid response format");
+                            }
+                        } catch (Exception e) {
+                            // If standard format parsing fails, try direct parsing
+                            T data = objectMapper.readValue(responseBody, responseType);
+                            return ServiceResponse.success(data);
+                        }
                     } else {
-                        // Direct parsing
-                        T data = gson.fromJson(response.body(), responseType);
+                        // Direct parsing for non-standard response format
+                        T data = objectMapper.readValue(responseBody, responseType);
                         return ServiceResponse.success(data);
                     }
                 }
-            } catch (JsonSyntaxException e) {
+            } catch (JsonProcessingException e) {
                 return ServiceResponse.error("Failed to parse response from service: " + e.getMessage());
             }
         } else {
             // Error response
+            String responseBody = response.body();
             try {
-                ResponseBuilder.Response errorResponse = gson.fromJson(response.body(), ResponseBuilder.Response.class);
-                if (errorResponse != null && errorResponse.getMessage() != null) {
-                    return ServiceResponse.error(errorResponse.getMessage());
+                // Try to parse as our standard error format
+                if (responseBody != null && responseBody.trim().startsWith("{")) {
+                    ResponseBuilder.Response errorResponse = objectMapper.readValue(responseBody, ResponseBuilder.Response.class);
+                    if (errorResponse != null && errorResponse.getMessage() != null) {
+                        return ServiceResponse.error(errorResponse.getMessage());
+                    }
                 }
-            } catch (JsonSyntaxException ignored) {
-                // If we can't parse as our standard error format, use the raw response
+            } catch (JsonProcessingException e) {
+                // Log parsing failure for debugging (could be enhanced with proper logging)
+                System.err.println("Failed to parse error response as JSON: " + e.getMessage());
             }
             
-            return ServiceResponse.error("Service responded with status " + response.statusCode() + ": " + response.body());
+            // Fallback to raw response with status code
+            String errorMessage = "Service responded with status " + response.statusCode();
+            if (responseBody != null && !responseBody.trim().isEmpty()) {
+                errorMessage += ": " + responseBody;
+            }
+            return ServiceResponse.error(errorMessage);
         }
     }
 }

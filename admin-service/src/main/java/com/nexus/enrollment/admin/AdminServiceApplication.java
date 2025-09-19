@@ -1,5 +1,6 @@
 package com.nexus.enrollment.admin;
 
+import com.nexus.enrollment.common.web.WebServer;
 import com.nexus.enrollment.admin.service.AdminService;
 import com.nexus.enrollment.admin.service.ReportService;
 import com.nexus.enrollment.admin.handler.AdminHandler;
@@ -17,8 +18,10 @@ public class AdminServiceApplication {
         // Initialize handler
         AdminHandler adminHandler = new AdminHandler(adminService, reportService);
         
-        // Create and configure Javalin app
-        Javalin app = Javalin.create().start(PORT);
+        // Create and configure Javalin app using centralized WebServer configuration
+        Javalin app = WebServer.createAndConfigureServer();
+        
+        app.start(PORT);
         
         // Register routes
         registerRoutes(app, adminHandler);

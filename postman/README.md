@@ -134,6 +134,12 @@ Tests use Postman variables for:
 - Test data (student IDs, course IDs, etc.)
 - Timestamps and dynamic values
 
+### Request Naming Convention
+All requests follow a consistent naming pattern:
+- **Format:** `{Action} {Resource}` (e.g., "Get Student by ID", "Create Course")
+- **HTTP Methods:** Clearly indicated in request names
+- **Error Cases:** Named with "Error" suffix (e.g., "Get Student by ID - Error")
+
 ### Pre-request Scripts
 - Set up dynamic timestamps
 - Configure request-specific variables

@@ -338,7 +338,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"courseCode\": \"CS201\",\n    \"name\": \"Data Structures\",\n    \"description\": \"Introduction to data structures and algorithms\",\n    \"department\": \"Computer Science\",\n    \"capacity\": 30,\n    \"instructorId\": 1\n}"
+					"raw": "{\n    \"courseCode\": \"CS201\",\n    \"name\": \"Data Structures\",\n    \"description\": \"Introduction to data structures and algorithms\",\n    \"department\": \"Computer Science\",\n    \"totalCapacity\": 30,\n    \"instructorId\": 1,\n    \"schedule\": {\n        \"dayOfWeek\": \"FRIDAY\",\n        \"startTime\": \"10:00:00\",\n        \"endTime\": \"11:30:00\",\n        \"location\": \"Room D404\"\n    }\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/courses",
