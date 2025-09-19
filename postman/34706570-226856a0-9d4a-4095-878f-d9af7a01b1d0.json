@@ -1,0 +1,464 @@
+{
+	"info": {
+		"_postman_id": "34706570-226856a0-9d4a-4095-878f-d9af7a01b1d0",
+		"name": "Admin Service API Tests",
+		"description": "Comprehensive test collection for the Admin Service microservice",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get All Students",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains all students\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('all students');",
+							"});",
+							"",
+							"pm.test(\"Response time is acceptable\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(300);",
+							"});"
+						],
+						"type": "text/javascript",
+						"id": "7801d491-0bf2-42bc-ba91-00f6feb42945"
+					}
+				}
+			],
+			"id": "34706570-7a472403-88a8-462b-80a3-a37f645db3d4",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/admin/students",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"students"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Faculty",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains all faculty\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('all faculty');",
+							"});"
+						],
+						"type": "text/javascript",
+						"id": "5c36bb42-6121-44a5-8880-073bffc43d54"
+					}
+				}
+			],
+			"id": "34706570-11306264-57f1-4299-885b-cb16661837c7",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/admin/faculty",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"faculty"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Enrollment Report",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains enrollment report\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('Enrollment report');",
+							"});"
+						],
+						"type": "text/javascript",
+						"id": "49a64486-8e77-4229-9a5d-0f72b9f48376"
+					}
+				}
+			],
+			"id": "34706570-bc793c2d-ec76-4170-93f7-35f97ce998b4",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/admin/reports/enrollment?department={{department}}&semester={{semester}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"reports",
+						"enrollment"
+					],
+					"query": [
+						{
+							"key": "department",
+							"value": "{{department}}"
+						},
+						{
+							"key": "semester",
+							"value": "{{semester}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Faculty Workload Report",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains workload report\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('workload report');",
+							"});"
+						],
+						"type": "text/javascript",
+						"id": "602e43ab-1301-45c9-a82f-1c5be9572bec"
+					}
+				}
+			],
+			"id": "34706570-0917a202-be1c-41cd-b78a-2db45215fbb2",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/admin/reports/faculty-workload",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"reports",
+						"faculty-workload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Course Trends Report",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains course trends report\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('trends report');",
+							"});"
+						],
+						"type": "text/javascript",
+						"id": "c9e65f5e-124c-4801-bf7d-1465a954fb5b"
+					}
+				}
+			],
+			"id": "34706570-0f320941-411b-4c7a-9020-82b92fa9e03c",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/admin/reports/course-trends",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"reports",
+						"course-trends"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create New Course",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response confirms course creation\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('Create new course');",
+							"});"
+						],
+						"type": "text/javascript",
+						"id": "22c3fb45-0cf5-4adc-967f-d6a96a95d3b8"
+					}
+				}
+			],
+			"id": "34706570-c9bf5b4f-a5a2-4359-948d-599d94de115e",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"courseCode\": \"ADMIN301\",\n    \"name\": \"Advanced Database Systems\",\n    \"description\": \"Advanced topics in database design and management\",\n    \"department\": \"Computer Science\",\n    \"capacity\": 25,\n    \"instructorId\": 1,\n    \"semester\": \"Spring 2025\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/courses",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"courses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Course",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response confirms course update\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('Update course');",
+							"});"
+						],
+						"type": "text/javascript",
+						"id": "da19e679-8712-48e8-9b9a-53365dbcf0f0"
+					}
+				}
+			],
+			"id": "34706570-66d6809d-ebc3-482e-873b-a0a01d9db964",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"Updated Course Name\",\n    \"description\": \"Updated course description\",\n    \"capacity\": 35\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/courses/{{courseId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"courses",
+						"{{courseId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Course",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response confirms course deletion\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('Delete course');",
+							"});"
+						],
+						"type": "text/javascript",
+						"id": "b0a3dedf-bdac-46b0-80c9-954243d53967"
+					}
+				}
+			],
+			"id": "34706570-c924a1f4-c9db-4cdf-8143-53241384707d",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/admin/courses/{{courseId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"courses",
+						"{{courseId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Force Enroll Student",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response confirms force enrollment\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('status', 'success');",
+							"    pm.expect(jsonData.message).to.include('Force enroll');",
+							"});"
+						],
+						"type": "text/javascript",
+						"id": "83fbb1f8-9548-4f55-9b7d-13081309aa90"
+					}
+				}
+			],
+			"id": "34706570-a4b40b7a-20d2-437b-9bd0-e66f386e634d",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"reason\": \"Administrative override\",\n    \"overridePrerequisites\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/students/{{studentId}}/force-enroll/{{courseId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"students",
+						"{{studentId}}",
+						"force-enroll",
+						"{{courseId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8084",
+			"type": "string"
+		},
+		{
+			"key": "department",
+			"value": "Computer Science",
+			"type": "string"
+		},
+		{
+			"key": "semester",
+			"value": "Fall2024",
+			"type": "string"
+		},
+		{
+			"key": "courseId",
+			"value": "101",
+			"type": "string"
+		},
+		{
+			"key": "studentId",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}
