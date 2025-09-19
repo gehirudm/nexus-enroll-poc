@@ -382,7 +382,7 @@
 	],
 	"variable": [
 		{
-			"key": "baseUrl",
+			"key": "admin_service_url",
 			"value": "http://localhost:8084",
 			"type": "string"
 		},

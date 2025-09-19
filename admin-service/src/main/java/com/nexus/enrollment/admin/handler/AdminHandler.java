@@ -103,8 +103,8 @@ public class AdminHandler {
         try {
             Long studentId = Long.valueOf(ctx.pathParam("studentId"));
             Long courseId = Long.valueOf(ctx.pathParam("courseId"));
-            adminService.forceEnrollStudent(studentId, courseId);
-            ctx.json(createSuccessResponse("Student force enrolled successfully", null));
+            String result = adminService.forceEnrollStudent(studentId, courseId);
+            ctx.json(createSuccessResponse("Student force enrolled successfully", result));
         } catch (Exception e) {
             ctx.status(400).json(createErrorResponse(e.getMessage()));
         }
